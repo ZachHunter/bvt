@@ -15,15 +15,17 @@ genePlot(x, gene, by = NULL, plotType = c("box", "dot", "bar",
 
 \item{by}{positive integer; sets the cex multiplier for point size.}
 
+\item{plotType}{character; method to be used for ploting dots. Can be set to "jitter", "linear", "beeswarm" or "distribution".}
+
 \item{symbol}{numeric; scaling factor controlling the width of the boxes.}
+
+\item{main}{character; The main plot title. Defaults to true for automated generation.}
 
 \item{na.rm}{positive integer; sets pty for plotting data points. Can be a vector to support additional graphical customization.}
 
 \item{shiny}{logical; if a p-value can be easily calculated for your data, it will be displayed using the \code{sub} annotation setting.}
 
 \item{...}{additional options for S3 method variants}
-
-\item{type}{character; method to be used for ploting dots. Can be set to "jitter", "linear", "beeswarm" or "distribution".}
 }
 \description{
 Vissualize gene expression data.

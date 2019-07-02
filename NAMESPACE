@@ -2,4 +2,8 @@
 
 S3method(genePlot,default)
 export(genePlot)
-import(NicePlots)
+import(dplyr)
+importFrom(Biobase,exprs)
+importFrom(Biobase,fData)
+importFrom(Biobase,pData)
+importFrom(purrr,map)

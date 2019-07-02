@@ -7,7 +7,8 @@
 #' @param x R data object; Most typically this is a seqExpressionSet there is support for other datatypes as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
 #' @param by positive integer; sets the cex multiplier for point size.
-#' @param type character; method to be used for ploting dots. Can be set to "jitter", "linear", "beeswarm" or "distribution".
+#' @param plotType character; method to be used for ploting dots. Can be set to "jitter", "linear", "beeswarm" or "distribution".
+#' @param main character; The main plot title. Defaults to true for automated generation.
 #' @param symbol numeric; scaling factor controlling the width of the boxes.
 #' @param na.rm positive integer; sets pty for plotting data points. Can be a vector to support additional graphical customization.
 #' @param shiny logical; if a p-value can be easily calculated for your data, it will be displayed using the \code{sub} annotation setting.
@@ -15,12 +16,16 @@
 #'
 #' @examples
 #' ToDo<-1
-#' @import NicePlots
+#' @import dplyr
+#' @importFrom purrr map
+#' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link{boxplot}}
 genePlot <- function(x, gene, by=NULL, plotType=c("box","dot","bar","violin","density"), symbol="GeneSymbol", main=TRUE, na.rm=FALSE, shiny=FALSE, ...) {UseMethod("genePlot",x)}
 
-#' @import NicePlots
+#' @import dplyr
+#' @importFrom purrr map
+#' @importFrom Biobase exprs pData fData
 #' @export
 genePlot.default <- function(x, gene, by=NULL, plotType=c("box","dot","bar","violin","density"), symbol="GeneSymbol", main=TRUE, na.rm=FALSE, shiny=FALSE, ...) {
   npOptions<-list(...)
@@ -54,7 +59,7 @@ genePlot.default <- function(x, gene, by=NULL, plotType=c("box","dot","bar","vio
       main<-paste0(gene, " Expression")
     }
   }
-  npOptions<-append(list(x=data,by=by,na.rm=na.rm,theme=theme,main=main),npOptions)
+  npOptions<-append(list(x=data,by=by,na.rm=na.rm,main=main),npOptions)
   if(plotType[1]=="box"){
     print(npOptions)
     do.call("niceBox",npOptions)
