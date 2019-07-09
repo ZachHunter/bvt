@@ -6,26 +6,31 @@
 \usage{
 genePlot(x, gene, by = NULL, plotType = c("box", "dot", "bar",
   "violin", "density"), symbol = "GeneSymbol", main = TRUE,
-  na.rm = FALSE, shiny = FALSE, ...)
+  na.rm = FALSE, shiny = FALSE, groupByGene = TRUE,
+  useNormCounts = TRUE, ...)
 }
 \arguments{
-\item{x}{R data object; Most typically this is a seqExpressionSet there is support for other datatypes as well.}
+\item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
 
 \item{gene}{character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.}
 
-\item{by}{positive integer; sets the cex multiplier for point size.}
+\item{by}{character vecter, or dataframe of factors; Will look up grouping factors in the phenotype data (\code{pData}) of the R data object \code{x}. Factors and dataframes of factors can also be passed directly.}
 
-\item{plotType}{character; method to be used for ploting dots. Can be set to "jitter", "linear", "beeswarm" or "distribution".}
+\item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
 
-\item{symbol}{numeric; scaling factor controlling the width of the boxes.}
+\item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
-\item{na.rm}{positive integer; sets pty for plotting data points. Can be a vector to support additional graphical customization.}
+\item{na.rm}{logical; Removes \code{\link{NA}} values prior to ploting.}
 
-\item{shiny}{logical; if a p-value can be easily calculated for your data, it will be displayed using the \code{sub} annotation setting.}
+\item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
-\item{...}{additional options for S3 method variants}
+\item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
+
+\item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
+
+\item{...}{Any paramenter recognized by \code{NicePlots} functions.}
 }
 \description{
 Vissualize gene expression data.
@@ -35,7 +40,8 @@ This is a major to do.
 }
 \examples{
 ToDo<-1
+
 }
 \seealso{
-\code{\link{boxplot}}
+\code{\link[NicePlots]{niceBox}} \code{\link[NicePlots]{niceVio}} \code{\link[NicePlots]{niceBar}} \code{\link[NicePlots]{niceDots}} \code{\link[NicePlots]{niceDensity}}
 }
