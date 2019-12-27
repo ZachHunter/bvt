@@ -4,17 +4,15 @@
 \alias{genePlot}
 \title{Plot Gene Expression Data}
 \usage{
-genePlot(x, gene, by = NULL, plotType = c("box", "dot", "bar",
-  "violin", "density"), symbol = "GeneSymbol", main = TRUE,
-  na.rm = FALSE, shiny = FALSE, groupByGene = TRUE,
-  useNormCounts = TRUE, ...)
+genePlot(x, gene, plotType = c("box", "dot", "bar", "violin", "density",
+  "suface"), symbol = "GeneSymbol", main = TRUE, na.rm = TRUE,
+  group = NULL, subGroup = NULL, highlight = NULL, facet = NULL,
+  shiny = FALSE, groupByGene = TRUE, useNormCounts = TRUE, ...)
 }
 \arguments{
 \item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
 
 \item{gene}{character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.}
-
-\item{by}{character vecter, or dataframe of factors; Will look up grouping factors in the phenotype data (\code{pData}) of the R data object \code{x}. Factors and dataframes of factors can also be passed directly.}
 
 \item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
 
@@ -23,6 +21,14 @@ genePlot(x, gene, by = NULL, plotType = c("box", "dot", "bar",
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
 \item{na.rm}{logical; Removes \code{\link{NA}} values prior to ploting.}
+
+\item{group}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.}
+
+\item{subGroup}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.}
+
+\item{highlight}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.}
+
+\item{facet}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
 
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
@@ -36,7 +42,19 @@ genePlot(x, gene, by = NULL, plotType = c("box", "dot", "bar",
 Vissualize gene expression data.
 }
 \details{
-This is a major to do.
+The \code{genePlot} is designed to make vissualizatin of gene expression data simple and easy for R novices and bioinformaticians alike.
+The function is an S3 generic that accept various R and Bioconductor datasets as input and exracts the expression, factor and annotation data from them according to type.
+The factors allow for spliting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
+If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
+If no matches are found the row names of are checked of the expression data are check for matches as well.
+If charactar values are given for factor input, \code{genePlot} will attempt to look up assocation phenotype data (e.g. \code{\link[Biobase]{pData}}).
+One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
+The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
+The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimentional kernal density plots (\code{\link[NicePlots]{niceDensity}}).
+Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
+\code{genePlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
+Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
 }
 \examples{
 ToDo<-1

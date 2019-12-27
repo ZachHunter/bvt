@@ -1,6 +1,6 @@
 Package: bvt
 Type: Package
-Title: Vissualization Tools for Bioconductor
+Title: Visualization Tools for Bioconductor
 Version: 0.1.0
 Author: Zachary Hunter
 Maintainer: The package maintainer <zachary_hunter@dfci.harvardedu>
@@ -9,7 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Depends: NicePlots,dplyr
-Imports: tidyr,tibble,RColorBrewer,purrr,ggplot2,Biobase,EDASeq,DESeq2,edgeR,limma,KernSmooth,beeswarm,boot,SummarizedExperiment
+Depends: NicePlots
+Imports: tidyr,tibble,RColorBrewer,purrr,ggplot2,Biobase,EDASeq,DESeq2,edgeR,limma,KernSmooth,beeswarm,boot,SummarizedExperiment,magrittr
 Suggests: shiny, rgl
 RoxygenNote: 6.1.1
