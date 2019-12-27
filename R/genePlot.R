@@ -44,7 +44,11 @@ genePlot <- function(x, gene, plotType=c("box","dot","bar","violin","density","s
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
+<<<<<<< HEAD
 genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, shiny=FALSE, groupByGene=TRUE,...) {
+=======
+genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, shiny=FALSE, groupByGene=TRUE,...) {
+>>>>>>> 739fc2557ff618bc0d13594eeb9f183b47f6c39c
   npOptions<-list(...)
 
   if(main==TRUE) {
@@ -65,10 +69,14 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
   } else {
     highlight<-TRUE
   }
+<<<<<<< HEAD
   if(length(gene)>1 & (!is.null(group) | !is.null(subGroup))) {
     subGroup<-TRUE
   }
   npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet, na.rm=na.rm,main=main),npOptions)
+=======
+  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight, subGroup=subGroup, facet=facet, na.rm=na.rm,main=main),npOptions)
+>>>>>>> 739fc2557ff618bc0d13594eeb9f183b47f6c39c
   dataOut<-1
   if(plotType[1]=="box"){
     dataOut<-do.call("niceBox",npOptions)
