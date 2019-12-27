@@ -5,8 +5,8 @@
 \title{Retieve Gene Expression and Factor Data}
 \usage{
 getGeneData(x, gene, plotType = "box", group = NULL, subGroup = NULL,
-  highlight = NULL, facet = NULL, symbol = "GeneSymbol",
-  useNormCounts = TRUE, ...)
+  highlight = NULL, facet = NULL, stack = NULL,
+  symbol = "GeneSymbol", useNormCounts = TRUE, ...)
 }
 \arguments{
 \item{x}{R data object; Most typically this is an \code{\link[Biobase]{ExpressionSet}}, but there is support for other datatypes as well.}
@@ -22,6 +22,8 @@ getGeneData(x, gene, plotType = "box", group = NULL, subGroup = NULL,
 \item{highlight}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.}
 
 \item{facet}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
+
+\item{stack}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.}
 
 \item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (e.g. \code{\link[Biobase]{fData}}).}
 

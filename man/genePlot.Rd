@@ -7,7 +7,8 @@
 genePlot(x, gene, plotType = c("box", "dot", "bar", "violin", "density",
   "suface"), symbol = "GeneSymbol", main = TRUE, na.rm = TRUE,
   group = NULL, subGroup = NULL, highlight = NULL, facet = NULL,
-  shiny = FALSE, groupByGene = TRUE, useNormCounts = TRUE, ...)
+  stack = NULL, shiny = FALSE, groupByGene = TRUE,
+  useNormCounts = TRUE, ...)
 }
 \arguments{
 \item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
@@ -29,6 +30,8 @@ genePlot(x, gene, plotType = c("box", "dot", "bar", "violin", "density",
 \item{highlight}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.}
 
 \item{facet}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
+
+\item{stack}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.}
 
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 

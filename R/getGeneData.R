@@ -11,6 +11,7 @@
 #' @param subGroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
 #' @param highlight factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
 #' @param facet factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
+#' @param stack factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
 #' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (e.g. \code{\link[Biobase]{fData}}).
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
 #' @param ... Any paramenter recognized by \code{NicePlots} functions.
@@ -21,13 +22,18 @@
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
 #' @seealso \code{\link[bvt]{genePlot}}, \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}
-getGeneData <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {UseMethod("getGeneData",x)}
+getGeneData <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {UseMethod("getGeneData",x)}
 
 #' @importFrom tibble is_tibble
 #' @importFrom purrr map
-getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   #strategy here is to have each special bioconductor data type preprocess the data and then call getGeneData again to organize the data in the default method.
-  factorData<-list(group=group,subGroup=subGroup,highlight=highlight)
+  factorData<-list(group=group,subGroup=subGroup,stack,highlight=highlight)
+  if(plotType=="bar"){
+    highlight<-NULL
+  } else {
+    stack<-NULL
+  }
   #since this is the generic catch all, lets try to standardize the input types.
   if(is.list(x) | is_tibble(x)) {x<-as.data.frame(x)}
   if(is.data.frame(x)){x<-as.matrix(x)}
@@ -41,6 +47,9 @@ getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NU
     }
     if(!is.null(highlight) & dim(x)[1] != length(highlight)) {
       stop(paste0("Factor data for 'highlight' is not the same length (",length(highlight),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
+    }
+    if(!is.null(stack) & dim(x)[1] != length(stack)) {
+      stop(paste0("Factor data for 'stack' is not the same length (",length(highlight),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
     }
     #subGrouping is not possible if multiple genes have been selected.
     if(dim(x)[2]>1 & !is.null(subGroup)) {
@@ -60,15 +69,18 @@ getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NU
     if(!is.null(highlight) & length(x) != length(highlight)) {
       stop(paste0("Factor data for 'highlight' is not the same length (",length(highlight),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
     }
+    if(!is.null(stack) & length(x) != length(stack)) {
+      stop(paste0("Factor data for 'stack' is not the same length (",length(stack),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
+    }
   }
-  factorData<-data.frame(factorData[c(!is.null(group),!is.null(subGroup),!is.null(highlight))])
+  factorData<-data.frame(factorData[c(!is.null(group),!is.null(subGroup),!is.null(stack),!is.null(highlight))])
   return(list(x=x,by=factorData,facet=facet))
 }
 
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom Biobase exprs pData fData
-getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #issue a quick warning if the data looks like isoform data
   if(grepl("^ENST",rownames(exprs(x))[1]) | grepl("^[NX]{1}[MR]{1}_",rownames(exprs(x))[1])){warning("This appears to be isoform data which is fine as long as each isoform is treated like a gene.\nFor better isoform support, please us isoPlot instead.", call.=FALSE)}
@@ -82,14 +94,13 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
         data<-exprs(x)[which(fData(x)[,symbol]==gene),]
       }
     }
-  }
-  if(sum(gene %in% rownames(exprs(x)))>0 & data[1]==1) {
+  } else if(sum(gene %in% rownames(exprs(x)))>0) {
     if(length(gene)>1) {
       data<-t(exprs(x)[gene,])
     } else {
       data<-exprs(x)[gene,]
     }
-  } else if (data[1]==1) {
+  } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
 
@@ -106,7 +117,10 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
   if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(pData(x)))) {
     facet<-pData(x)[,facet[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet),gdOptions)
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(x)))) {
+    stack<-pData(x)[,stack[1]]
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
@@ -116,7 +130,7 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
 #' @importFrom magrittr %>%
 #' @importFrom EDASeq counts normCounts
 #' @importFrom Biobase pData fData
-getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #Handling the situation where normCounts has not been initialized.
   if(is.null(normCounts(x)) & useNormCounts==TRUE) {
@@ -143,8 +157,7 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
         }
       }
     }
-  }
-  if(sum(gene %in% rownames(counts(x)))>0 & data[1]==1) {
+  } else if(sum(gene %in% rownames(counts(x)))>0) {
     if(length(gene)>1) {
       if(useNormCounts==TRUE) {
         data<-t(normCounts(x)[gene,])
@@ -158,7 +171,7 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
         data<-counts(x)[gene,]
       }
     }
-  } else if (data[1]==1) {
+  } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
 
@@ -175,14 +188,17 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
   if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(pData(x)))) {
     facet<-pData(x)[,facet[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet),gdOptions)
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(x)))) {
+    stack<-pData(x)[,stack[1]]
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
 
 #' @importClassesFrom DESeq2 DESeqTransform
 #' @importFrom SummarizedExperiment assay colData rowData
-getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #issue a quick warning if the data looks like isoform data
   if(grepl("^ENST",rownames(assay(x))[1]) | grepl("^[NX]{1}[MR]{1}_",rownames(assay(x))[1])){warning("This appears to be isoform data which is fine as long as each isoform is treated like a gene.\nFor better isoform support, please us isoPlot instead.", call.=FALSE)}
@@ -196,14 +212,13 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
         data<-assay(x)[which(rowData(x)[,symbol]==gene),]
       }
     }
-  }
-  if(sum(gene %in% rownames(assay(x)))>0 & data[1]==1) {
+  } else if(sum(gene %in% rownames(assay(x)))>0) {
     if(length(gene)>1) {
       data<-t(assay(x)[gene,])
     } else {
       data<-assay(x)[gene,]
     }
-  } else if (data[1]==1) {
+  } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
 
@@ -220,7 +235,10 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
   if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(colData(x)))) {
     facet<-colData(x)[,facet[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet),gdOptions)
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
+    stack<-colData(x)[,stack[1]]
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
@@ -228,7 +246,7 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom SummarizedExperiment assay colData rowData
-getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #issue a quick warning if the data looks like isoform data
   if(grepl("^ENST",rownames(assay(x))[1]) | grepl("^[NX]{1}[MR]{1}_",rownames(assay(x))[1])){warning("This appears to be isoform data which is fine as long as each isoform is treated like a gene.\nFor better isoform support, please us isoPlot instead.", call.=FALSE)}
@@ -242,14 +260,13 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
         data<-assay(x)[which(rowData(x)[,symbol]==gene),]
       }
     }
-  }
-  if(sum(gene %in% rownames(assay(x)))>0 & data[1]==1) {
+  } else if(sum(gene %in% rownames(assay(x)))>0) {
     if(length(gene)>1) {
       data<-t(assay(x)[gene,])
     } else {
       data<-assay(x)[gene,]
     }
-  }else if (data[1]==1) {
+  } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
 
@@ -266,7 +283,10 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
   if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(colData(x)))) {
     facet<-colData(x)[,facet[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet),gdOptions)
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
+    stack<-colData(x)[,stack[1]]
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
   do.call("getGeneData", gdOptions)
 
 }
@@ -274,7 +294,7 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
 #' @importClassesFrom limma EList
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
-getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #issue a quick warning if the data looks like isoform data
   if(grepl("^ENST",rownames(x$E)[1]) | grepl("^[NX]{1}[MR]{1}_",rownames(x$E)[1])){warning("This appears to be isoform data which is fine as long as each isoform is treated like a gene.\nFor better isoform support, please us isoPlot instead.", call.=FALSE)}
@@ -288,14 +308,13 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL
         data<-x$E[which(x$genes[,symbol]==gene),]
       }
     }
-  }
-  if(sum(gene %in% rownames(x$E))>0 & data[1]==1) {
+  } else if(sum(gene %in% rownames(x$E))>0) {
     if(length(gene)>1) {
       data<-t(x$E[gene,])
     } else {
       data<-x$E[gene,]
     }
-  }else if (data[1]==1) {
+  } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
 
@@ -328,7 +347,14 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL
       facet<-x$targets[,facet[1]]
     }
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet),gdOptions)
+  if(!is.null(stack) & length(stack)==1 & (any(stack %in% colnames(x$design)) | any(stack %in% colnames(x$targets)))) {
+    if (any(stack %in% colnames(x$design))) {
+      stack<-x$design[,stack[1]]
+    } else {
+      stack<-x$targets[,stack[1]]
+    }
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
