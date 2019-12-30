@@ -29,28 +29,18 @@ getGeneData <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, high
 getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   #strategy here is to have each special bioconductor data type preprocess the data and then call getGeneData again to organize the data in the default method.
   factorData<-list(group=group,subGroup=subGroup,stack,highlight=highlight)
-  if(plotType=="bar"){
+  if(plotType[1]=="bar"){
     highlight<-NULL
   } else {
     stack<-NULL
   }
+  sampleN<-0
   #since this is the generic catch all, lets try to standardize the input types.
   if(is.list(x) | is_tibble(x)) {x<-as.data.frame(x)}
   if(is.data.frame(x)){x<-as.matrix(x)}
   #Checking to make sure inputs are sane, first in the case of a matrix, then in the case of a vector.
   if(is.matrix(x)) {
-    if(!is.null(group) & dim(x)[1] != length(group)) {
-      stop(paste0("Factor data for 'group' is not the same length (",length(group),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(subGroup) & dim(x)[1] != length(subGroup)) {
-      stop(paste0("Factor data for 'subGroup' is not the same length (",length(subGroup),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(highlight) & dim(x)[1] != length(highlight)) {
-      stop(paste0("Factor data for 'highlight' is not the same length (",length(highlight),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(stack) & dim(x)[1] != length(stack)) {
-      stop(paste0("Factor data for 'stack' is not the same length (",length(highlight),") of the gene data (",dim(x)[1],").\nPlease check your data inputs.\n",call. = FALSE))
-    }
+    sampleN<-dim(x)[1]
     #subGrouping is not possible if multiple genes have been selected.
     if(dim(x)[2]>1 & !is.null(subGroup)) {
       if(is.null(group)){
@@ -59,19 +49,23 @@ getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NU
       subGroup<-NULL
     }
   } else {
-    #Checking on inputs in the use case that x is a vector of data.
-    if(!is.null(group) & length(x) != length(group)) {
-      stop(paste0("Factor data for 'group' is not the same length (",length(group),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(subGroup) & length(x) != length(subGroup)) {
-      stop(paste0("Factor data for 'subGroup' is not the same length (",length(subGroup),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(highlight) & length(x) != length(highlight)) {
-      stop(paste0("Factor data for 'highlight' is not the same length (",length(highlight),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
-    }
-    if(!is.null(stack) & length(x) != length(stack)) {
-      stop(paste0("Factor data for 'stack' is not the same length (",length(stack),") of the gene data (",length(x),").\nPlease check your data inputs.\n",call. = FALSE))
-    }
+    sampleN<-length(x)
+  }
+  if(!is.null(group) & sampleN != length(group)) {
+    stop(paste0("Factor data for 'group' is not the same length (",length(group),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
+  }
+  if(!is.null(subGroup) & sampleN != length(subGroup)) {
+    stop(paste0("Factor data for 'subGroup' is not the same length (",length(subGroup),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
+  }
+  if(!is.null(highlight) & sampleN != length(highlight)) {
+    stop(paste0("Factor data for 'highlight' is not the same length (",length(highlight),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
+  }
+  if(!is.null(stack) & sampleN != length(stack)) {
+    stop(paste0("Factor data for 'stack' is not the same length (",length(highlight),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
+  }
+  if(is.null(group) & is.null(subGroup) & is.null(highlight)) {
+    factorData[[1]]<-factor(rep("Data",sampleN))
+    group=TRUE
   }
   factorData<-data.frame(factorData[c(!is.null(group),!is.null(subGroup),!is.null(stack),!is.null(highlight))])
   return(list(x=x,by=factorData,facet=facet))
