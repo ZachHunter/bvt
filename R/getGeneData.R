@@ -63,12 +63,14 @@ getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NU
   if(!is.null(stack) & sampleN != length(stack)) {
     stop(paste0("Factor data for 'stack' is not the same length (",length(highlight),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
   }
-  if(is.null(group) & is.null(subGroup) & is.null(highlight)) {
+  NullNames<-FALSE
+  if(is.null(group) & is.null(subGroup)) {
     factorData[[1]]<-factor(rep("Data",sampleN))
     group=TRUE
+    NullNames<-TRUE
   }
   factorData<-data.frame(factorData[c(!is.null(group),!is.null(subGroup),!is.null(stack),!is.null(highlight))])
-  return(list(x=x,by=factorData,facet=facet))
+  return(list(x=x,by=factorData,facet=facet,NullNames=NullNames))
 }
 
 #' @importFrom purrr map
@@ -127,7 +129,7 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
 getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
   gdOptions<-list(...)
   #Handling the situation where normCounts has not been initialized.
-  if(is.null(normCounts(x)) & useNormCounts==TRUE) {
+  if(sum(!is.na(normCounts(x)))==0 & useNormCounts==TRUE) {
     warning("The normCounts slot in this data set is empty.\nUsing raw count data instead...\n", call. = FALSE)
     useNormCounts<-FALSE
   }
@@ -168,7 +170,6 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
   } else {
     stop("unable to identify gene listed in annotation or rownames of the data provided")
   }
-
   #Start processing the factor options. Assuming values are either independant factors or colnames of pData
   if(!is.null(group) & length(group)==1 & any(group %in% colnames(pData(x)))) {
     group<-pData(x)[,group[1]]

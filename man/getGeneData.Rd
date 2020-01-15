@@ -4,9 +4,19 @@
 \alias{getGeneData}
 \title{Retieve Gene Expression and Factor Data}
 \usage{
-getGeneData(x, gene, plotType = "box", group = NULL, subGroup = NULL,
-  highlight = NULL, facet = NULL, stack = NULL,
-  symbol = "GeneSymbol", useNormCounts = TRUE, ...)
+getGeneData(
+  x,
+  gene,
+  plotType = "box",
+  group = NULL,
+  subGroup = NULL,
+  highlight = NULL,
+  facet = NULL,
+  stack = NULL,
+  symbol = "GeneSymbol",
+  useNormCounts = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{R data object; Most typically this is an \code{\link[Biobase]{ExpressionSet}}, but there is support for other datatypes as well.}

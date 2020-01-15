@@ -12,4 +12,4 @@ LazyData: true
 Depends: NicePlots
 Imports: tidyr,tibble,RColorBrewer,purrr,ggplot2,Biobase,EDASeq,DESeq2,edgeR,limma,KernSmooth,beeswarm,boot,SummarizedExperiment,magrittr
 Suggests: shiny, rgl
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

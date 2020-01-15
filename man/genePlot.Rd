@@ -4,11 +4,24 @@
 \alias{genePlot}
 \title{Plot Gene Expression Data}
 \usage{
-genePlot(x, gene, plotType = c("box", "dot", "bar", "violin", "density",
-  "suface"), symbol = "GeneSymbol", main = TRUE, na.rm = TRUE,
-  group = NULL, subGroup = NULL, highlight = NULL, facet = NULL,
-  stack = NULL, shiny = FALSE, groupByGene = TRUE,
-  useNormCounts = TRUE, ...)
+genePlot(
+  x,
+  gene,
+  plotType = c("box", "dot", "bar", "violin", "density", "suface"),
+  symbol = "GeneSymbol",
+  legend = NULL,
+  main = TRUE,
+  na.rm = TRUE,
+  group = NULL,
+  subGroup = NULL,
+  highlight = NULL,
+  facet = NULL,
+  stack = NULL,
+  shiny = FALSE,
+  groupByGene = TRUE,
+  useNormCounts = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
@@ -18,6 +31,8 @@ genePlot(x, gene, plotType = c("box", "dot", "bar", "violin", "density",
 \item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
 
 \item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).}
+
+\item{legend}{boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 

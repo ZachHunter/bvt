@@ -26,6 +26,7 @@
 #' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.
 #' @param main character; The main plot title. Defaults to true for automated generation.
 #' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
+#' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
@@ -39,14 +40,14 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}} \code{\link[NicePlots]{niceVio}} \code{\link[NicePlots]{niceBar}} \code{\link[NicePlots]{niceDots}} \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol", main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
 
-genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE,...) {
+genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
 
   npOptions<-list(...)
 
@@ -57,7 +58,7 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
       main<-paste0(gene, " Expression")
     }
   }
-  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack)
+  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
   if(is.null(subGroup)){
     subGroup<-FALSE
   } else {
@@ -76,8 +77,23 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
   if(length(gene)>1 & (!is.null(group) | !is.null(subGroup))) {
     subGroup<-TRUE
   }
-
-  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main),npOptions)
+  if(is.null(group) & subGroup==TRUE) {
+    subGroup==FALSE
+  }
+  if(is.null(legend)){
+    legend<-FALSE
+    if(subGroup==TRUE | stack ==TRUE | highlight==TRUE) {
+      legend="Legend"
+    }
+  }
+  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
+  if(groupByGene==TRUE & data$NullNames==TRUE) {
+    if(is.factor(data$by)) {
+      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by)))))
+    } else {
+      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by[,1])))))
+    }
+  }
   dataOut<-1
   if(plotType[1]=="box"){
     dataOut<-do.call("niceBox",npOptions)
