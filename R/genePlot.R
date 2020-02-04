@@ -7,7 +7,7 @@
 #' The factors allow for spliting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
 #' If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 #' If no matches are found the row names of are checked of the expression data are check for matches as well.
-#' If charactar values are given for factor input, \code{genePlot} will attempt to look up assocation phenotype data (e.g. \code{\link[Biobase]{pData}}).
+#' If charactar values are given for factor input, \code{genePlot} will attempt to look up assocated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 #' The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
 #' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimentional kernal density plots (\code{\link[NicePlots]{niceDensity}}).
@@ -58,6 +58,12 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
       main<-paste0(gene, " Expression")
     }
   }
+  if(is.null(legend)){
+    legend<-FALSE
+    if(!is.null(subGroup) | !is.null(stack)| !is.null(highlight)) {
+      legend="Legend"
+    }
+  }
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
   if(is.null(subGroup)){
     subGroup<-FALSE
@@ -74,18 +80,16 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
   } else {
     stack<-TRUE
   }
-  if(length(gene)>1 & (!is.null(group) | !is.null(subGroup))) {
+  if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
     subGroup<-TRUE
   }
   if(is.null(group) & subGroup==TRUE) {
-    subGroup==FALSE
+    subGroup<-FALSE
   }
-  if(is.null(legend)){
-    legend<-FALSE
-    if(subGroup==TRUE | stack ==TRUE | highlight==TRUE) {
-      legend="Legend"
-    }
+  if(plotType[1]=="density" & !is.null(group)) {
+    subGroup<-TRUE
   }
+
   npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
   if(groupByGene==TRUE & data$NullNames==TRUE) {
     if(is.factor(data$by)) {

@@ -24,10 +24,30 @@
 #' @seealso \code{\link[bvt]{genePlot}}, \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}
 getGeneData <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {UseMethod("getGeneData",x)}
 
+#strategy here is to have each special bioconductor data type preprocess the data and then call getGeneData again to organize the data in the default method.
 #' @importFrom tibble is_tibble
 #' @importFrom purrr map
-getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
-  #strategy here is to have each special bioconductor data type preprocess the data and then call getGeneData again to organize the data in the default method.
+getGeneData.default <- function(x, gene=NULL, plotType="box", group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, rawData=TRUE,...) {
+  #rawData helps with the situation where a raw matrix, tibble or dataframe has been provided and is sent straight to default.
+  if(rawData==TRUE) {
+    if(is.vector(x) | is.factor(x)) {
+      x<-as.numeric(as.character(x))
+    } else {
+      x<-as.data.frame(x)
+      dataLength<-dim(x)[1]
+      if(!is.null(gene)){
+        if(sum(gene %in% rownames(x)) == length(gene)) {
+          x<-x[gene,]
+        } else {
+          stop(paste0("Some of the genes: ", paste0(gene,collapse=", "), " not found in the rownames of the data."),call. =FALSE)
+        }
+      }
+      if(is.data.frame(x)){
+        x<-data.frame(t(x))
+      }
+    }
+  }
+
   factorData<-list(group=group,subGroup=subGroup,stack,highlight=highlight)
   if(plotType[1]=="bar"){
     highlight<-NULL
@@ -64,10 +84,19 @@ getGeneData.default <- function(x, gene, plotType="box", group=NULL, subGroup=NU
     stop(paste0("Factor data for 'stack' is not the same length (",length(highlight),") of the gene data (",sampleN,").\nPlease check your data inputs.\n",call. = FALSE))
   }
   NullNames<-FALSE
-  if(is.null(group) & is.null(subGroup)) {
+  if(is.null(group) & is.null(subGroup) ) {
     factorData[[1]]<-factor(rep("Data",sampleN))
     group=TRUE
     NullNames<-TRUE
+    if(!is.vector(x) & (!is.null(highlight) | !is.null(stack))){
+      temp<-factorData[[1]]
+      factorIndex<-4
+      if(!is.null(stack) & is.null(highlight)){
+        factorIndex<-3
+      }
+      factorData[[1]]<-factorData[[factorIndex]]
+      factorData[[factorIndex]]<-temp
+    }
   }
   factorData<-data.frame(factorData[c(!is.null(group),!is.null(subGroup),!is.null(stack),!is.null(highlight))])
   return(list(x=x,by=factorData,facet=facet,NullNames=NullNames))
@@ -116,7 +145,7 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(x)))) {
     stack<-pData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
@@ -186,7 +215,7 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(x)))) {
     stack<-pData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
@@ -233,7 +262,7 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
     stack<-colData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
@@ -281,7 +310,7 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
     stack<-colData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
   do.call("getGeneData", gdOptions)
 
 }
@@ -349,7 +378,7 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL
       stack<-x$targets[,stack[1]]
     }
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
