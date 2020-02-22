@@ -33,24 +33,58 @@
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
 #' @param ... Any paramenter recognized by \code{NicePlots} functions.
 #'
+#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+#'
 #' @examples
-#' ToDo<-1
+#' #While designed for use with bioconductor datasets,
+#' #genePlot can also be used for generic data like iris.
+#'
+#' data(iris)
+#'
+#' #Using a vector of data
+#' genePlot(iris$Sepal.Length,gene=NA, highlight=iris$Species, plotType="dot", pointSize=.75,
+#' width=.5, pointShape=1, main="Distribution of Sepal Length")
+#'
+#' #Kernal denisty plots
+#' genePlot(iris$Sepal.Length,gene=NA, group=iris$Species, plotType="density",
+#' main="Distribution of Sepal Lengths by Species")
+#'
+#' #Plotting multiple collumns:
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
+#' highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
+#'
+#' #Multiple collumns with grouping factors:
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
+#'
+#' #Same with grouping order reveresed
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+#' groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
+#'
+#' #2D distribution plotting
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
+#' group=iris$Species, theme=npGGTheme)
+#'
+#' #Surface plotting of the above. Use rgl for interactive models.
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
+#' useRgl=FALSE, theta=60, phi=30, theme=npGGTheme)
 #'
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}} \code{\link[NicePlots]{niceVio}} \code{\link[NicePlots]{niceBar}} \code{\link[NicePlots]{niceDots}} \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
 
-genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
+genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
 
   npOptions<-list(...)
-
+  if(!is.null(highlight) & plotType[1]=="bar") {
+    hightlight<-NULL
+  }
   if(main==TRUE) {
     if(length(gene)>1) {
       main<-paste0(c("Gene Expression:",paste0(gene,collapse=", ")),collapse=" ")
@@ -118,41 +152,44 @@ genePlot.default <- function(x, gene, plotType=c("box","dot","bar","violin","den
   invisible(dataOut)
 }
 
-# genePlot.npOutput <- function(x, gene, by=NULL, plotType=c("box","dot","bar","violin","density"), symbol="GeneSymbol", main=TRUE, na.rm=FALSE, shiny=FALSE, groupByGene=TRUE, ...) {
-#   npOptions<-list(...)
-#   #NOT DONE
-#   data<-1
-#   if(grepl("ENST",rownames(exprs(x))[1])){warning("This appears to be isoform data which may cause problems. Please us isoPlot instead.", call.=FALSE)}
-#   if(sum(gene %in% fData(x)[,symbol])>0){
-#     if(length(gene)>1) {
-#       data<-map(gene, function(g) exprs(x)[fData(x)[,symbol]==g,]) %>% as.data.frame()
-#       colnames(data)<-gene
-#     } else {
-#       data<-exprs(x)[which(fData(x)[,symbol]==gene),]
-#     }
-#   } else if(sum(gene %in% rownames(exprs(x)))>0) {
-#     if(length(gene)>1) {
-#       data<-t(exprs(x)[gene,])
-#     } else {
-#       data<-exprs(x)[gene,]
-#     }
-#   }else {
-#     stop("unable to identify gene listed in annotation or rownames of the data provided")
-#   }
-#   if(!is.null(by) & is.character(by)) {
-#     by<-pData(x)[,by]
-#   } else{
-#     stopifnot((is.data.frame(by) | is.null(by) | is.factor(by)))
-#   }
-#   if(main==TRUE) {
-#     if(length(gene)>1) {
-#       main<-paste0(c("Gene Expression:",paste0(gene,collapse=", ")),collapse=" ")
-#     } else {
-#       main<-paste0(gene, " Expression")
-#     }
-#   }
-#   npOptions<-append(list(x=data,by=by,na.rm=na.rm,main=main,groupByGene=groupByGene,plotType=plotType,shiny=shiny),npOptions)
-#   dataOut<-do.call("genePlot", npOptions)
-#   invisible(dataOut)
-# }
+#' @importFrom purrr map
+#' @importFrom NicePlots niceBox niceVio niceBar niceDensity
+#' @importFrom Biobase exprs pData fData
+#' @export
+genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
+  clOptions<-list(...)
+  for(opt in names(clOptions)) {
+    if(is.null(x$options[opt])){
+      append(x$options,list(opt=clOptions[[opt]]))
+    }else{
+      x$options[[opt]]<-clOptions[[opt]]
+    }
+  }
+  if(!is.null(x$options[["groupByGene"]])){
+    if(x$options[["groupByGene"]]==TRUE) {
+      x$options[["flipFacts"]]<-FALSE
+    } else {
+      x$options[["flipFacts"]]<-TRUE
+    }
+  }
+  dataOut<-1
+  if(plotType[1]=="box"){
+    dataOut<-do.call("niceBox",x$options)
+  } else if (plotType[1]=="dot") {
+    dataOut<-do.call("niceDots",x$options)
+  } else if (plotType[1]=="violin") {
+    dataOut<-do.call("niceVio",x$options)
+  } else if (plotType[1]=="bar") {
+    dataOut<-do.call("niceBar",x$options)
+  } else if (plotType[1]=="density") {
+    dataOut<-do.call("niceDensity",x$options)
+  } else if (plotType[1]=="surface") {
+    npOptions<- append(list(plotType="surface"),x$options)
+    dataOut<-do.call("niceDensity",x$options)
+  } else {
+    stop("invalid plot type")
+  }
+
+  invisible(dataOut)
+}
 

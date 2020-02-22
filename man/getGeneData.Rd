@@ -45,7 +45,10 @@ getGeneData(
 Returns selected gene expression and factor data based on data type.
 }
 \details{
-Todo
+These are a series of S3 methods that preprocess options based the data input type.
+Most Bioconductor datasets are supported. Once the prepocessing is complete,
+the generic version is called and for and the common preprossessing steps are performed
+prior to returning the data back to \code{\link[bvt]{genePlot}}.
 }
 \examples{
 ToDo<-1

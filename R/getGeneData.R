@@ -2,7 +2,10 @@
 #' @description Returns selected gene expression and factor data based on data type.
 #'
 #' @details
-#' Todo
+#' These are a series of S3 methods that preprocess options based the data input type.
+#' Most Bioconductor datasets are supported. Once the prepocessing is complete,
+#' the generic version is called and for and the common preprossessing steps are performed
+#' prior to returning the data back to \code{\link[bvt]{genePlot}}.
 #'
 #' @param x R data object; Most typically this is an \code{\link[Biobase]{ExpressionSet}}, but there is support for other datatypes as well.
 #' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.

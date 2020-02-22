@@ -6,7 +6,7 @@
 \usage{
 genePlot(
   x,
-  gene,
+  gene = NULL,
   plotType = c("box", "dot", "bar", "violin", "density", "suface"),
   symbol = "GeneSymbol",
   legend = NULL,
@@ -56,6 +56,9 @@ genePlot(
 
 \item{...}{Any paramenter recognized by \code{NicePlots} functions.}
 }
+\value{
+an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+}
 \description{
 Vissualize gene expression data.
 }
@@ -75,7 +78,37 @@ All npData objects can be replotted using  the \code{\link[graphics]{plot}} func
 Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
 }
 \examples{
-ToDo<-1
+#While designed for use with bioconductor datasets,
+#genePlot can also be used for generic data like iris.
+
+data(iris)
+
+#Using a vector of data
+genePlot(iris$Sepal.Length,gene=NA, highlight=iris$Species, plotType="dot", pointSize=.75,
+width=.5, pointShape=1, main="Distribution of Sepal Length")
+
+#Kernal denisty plots
+genePlot(iris$Sepal.Length,gene=NA, group=iris$Species, plotType="density",
+main="Distribution of Sepal Lengths by Species")
+
+#Plotting multiple collumns:
+genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
+highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
+
+#Multiple collumns with grouping factors:
+genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
+
+#Same with grouping order reveresed
+genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
+
+#2D distribution plotting
+genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
+group=iris$Species, theme=npGGTheme)
+
+#Surface plotting of the above. Use rgl for interactive models.
+genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
+useRgl=FALSE, theta=60, phi=30, theme=npGGTheme)
 
 }
 \seealso{
