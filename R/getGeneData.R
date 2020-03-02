@@ -121,6 +121,14 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subGr
       } else {
         data<-exprs(x)[which(fData(x)[,symbol]==gene),]
       }
+    } else if(sum(gene %in% rownames(exprs(x)))>0) {
+      if(length(gene)>1) {
+        data<-t(exprs(x)[gene,])
+      } else {
+        data<-exprs(x)[gene,]
+      }
+    } else {
+      stop("unable to identify gene listed in annotation or rownames of the data provided")
     }
   } else if(sum(gene %in% rownames(exprs(x)))>0) {
     if(length(gene)>1) {
@@ -184,6 +192,22 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
           data<-counts(x)[which(fData(x)[,symbol]==gene),]
         }
       }
+    } else if(sum(gene %in% rownames(counts(x)))>0) {
+      if(length(gene)>1) {
+        if(useNormCounts==TRUE) {
+          data<-t(normCounts(x)[gene,])
+        } else {
+          data<-t(counts(x)[gene,])
+        }
+      } else {
+        if(useNormCounts==TRUE) {
+          data<-normCounts(x)[gene,]
+        } else {
+          data<-counts(x)[gene,]
+        }
+      }
+    } else {
+      stop("unable to identify gene listed in annotation or rownames of the data provided")
     }
   } else if(sum(gene %in% rownames(counts(x)))>0) {
     if(length(gene)>1) {
@@ -238,6 +262,14 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
       } else {
         data<-assay(x)[which(rowData(x)[,symbol]==gene),]
       }
+    } else if(sum(gene %in% rownames(assay(x)))>0) {
+      if(length(gene)>1) {
+        data<-t(assay(x)[gene,])
+      } else {
+        data<-assay(x)[gene,]
+      }
+    } else {
+      stop("unable to identify gene listed in annotation or rownames of the data provided")
     }
   } else if(sum(gene %in% rownames(assay(x)))>0) {
     if(length(gene)>1) {
@@ -269,7 +301,7 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subG
   do.call("getGeneData", gdOptions)
 }
 
-
+#' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom SummarizedExperiment assay colData rowData
@@ -286,6 +318,14 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
       } else {
         data<-assay(x)[which(rowData(x)[,symbol]==gene),]
       }
+    } else if(sum(gene %in% rownames(assay(x)))>0) {
+      if(length(gene)>1) {
+        data<-t(assay(x)[gene,])
+      } else {
+        data<-assay(x)[gene,]
+      }
+    } else {
+      stop("unable to identify gene listed in annotation or rownames of the data provided")
     }
   } else if(sum(gene %in% rownames(assay(x)))>0) {
     if(length(gene)>1) {
@@ -334,6 +374,14 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subGroup=NULL
       } else {
         data<-x$E[which(x$genes[,symbol]==gene),]
       }
+    } else if(sum(gene %in% rownames(x$E))>0) {
+      if(length(gene)>1) {
+        data<-t(x$E[gene,])
+      } else {
+        data<-x$E[gene,]
+      }
+    } else {
+      stop("unable to identify gene listed in annotation or rownames of the data provided")
     }
   } else if(sum(gene %in% rownames(x$E))>0) {
     if(length(gene)>1) {
