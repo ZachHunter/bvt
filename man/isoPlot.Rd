@@ -20,7 +20,7 @@ isoPlot(
   facet = NULL,
   stack = NULL,
   shiny = FALSE,
-  groupByGene = TRUE,
+  groupByGene = FALSE,
   useNormCounts = TRUE,
   appris = FALSE,
   transcriptType = FALSE,
@@ -97,5 +97,5 @@ ToDo<-1
 
 }
 \seealso{
-\code{\link[NicePlots]{niceBox}} \code{\link[NicePlots]{niceVio}} \code{\link[NicePlots]{niceBar}} \code{\link[NicePlots]{niceDots}} \code{\link[NicePlots]{niceDensity}}
+\code{\link{genePlot}}, \code{\link{showIsoforms}}, \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
 }

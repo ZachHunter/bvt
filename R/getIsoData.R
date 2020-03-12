@@ -37,7 +37,19 @@ showIsoforms <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, appris=N
 #' @export
 showIsoforms.default <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...) {
   IsoDat<-x
-  IsoDat<-IsoDat[which(rownames(IsoDat) %in% isoforms | IsoDat[,symbol] %in% genes), ]
+  foundSymbol<-TRUE
+  if(!is.null(genes) & !(symbol %in% colnames(IsoDat))) {
+    warning(paste0("Unable to locate gene symbol column ",symbol," in the isoform feature data.\nIsoform selection by gene symbol is disabled."),call.=FALSE)
+    genes<-NULL
+    foundSymbol<-FALSE
+  }
+  if(foundSymbol==TRUE & !is.null(genes)) {
+    IsoDat<-IsoDat[which(rownames(IsoDat) %in% isoforms | IsoDat[,symbol] %in% genes), ]
+  } else if (is.null(isoforms) & (foundSymbol==FALSE | is.null(genes))) {
+    stop("Unable to identify valid isoforms from input.",call.=FALSE)
+  } else {
+    IsoDat<-IsoDat[which(rownames(IsoDat) %in% isoforms), ]
+  }
   if(appris!=FALSE & !is.null(appris) & !is.na(appris)) {
     apprisLoc<-grep("appris",colnames(IsoDat),ignore.case = TRUE)
     if(length(apprisLoc)==0) {
@@ -66,6 +78,13 @@ showIsoforms.default <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, 
       }
       names(IsoDat)<-myIsos
     }
+  }
+  if(is.vector(IsoDat)) {
+    if(length(IsoDat)==0) {
+      stop("No valid isoforms selected after filtering.\nCheck options or see documentaiton for more details.",call.=FALSE)
+    }
+  } else if (dim(IsoDat)[1]==0) {
+    stop("No valid isoforms selected after filtering.\nCheck options or see documentaiton for more details.",call.=FALSE)
   }
   IsoDat
 }
@@ -114,8 +133,9 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 #' @details
 #' ToDO
 #'
-#' @param x R data object with stored isoform annotation data; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
+#' @param d R data object with stored isoform annotation data; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
 #' @param isoforms character; A vector of isoform IDs to include in the output. Can be used in combination with with \code{genes}.
+#' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.
 #' @param group factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
 #' @param subGroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
 #' @param highlight factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
@@ -133,53 +153,53 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 #' @examples
 #' ToDo<-1
 #'
-#' @seealso \code{\link{isoPlot}}
-getIsoData <- function(x,isoforms=NULL, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",x)}
+#' @seealso \code{\link{isoPlot}} \code{\link{showIsoforms}} \code{\link{getGeneData}}
+getIsoData <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",d)}
 
-getIsoData.default <- function(x,isoforms=NULL, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
-  if(is.vector(x) | is.factor(x)) {
-    x<-as.numeric(as.character(x))
+getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  if(is.vector(d) | is.factor(d)) {
+    d<-as.numeric(as.character(d))
   } else {
-    x<-as.data.frame(x)
-    dataLength<-dim(x)[1]
+    d<-as.data.frame(d)
+    dataLength<-dim(d)[1]
     if(!is.null(isoforms)){
-      if(sum(isoforms %in% rownames(x)) == length(isoforms)) {
-        x<-x[isoforms,]
+      if(sum(isoforms %in% rownames(d)) == length(isoforms)) {
+        dx<-d[isoforms,]
       } else {
         stop(paste0("Some of the isoforms: ", paste0(isoforms,collapse=", "), " not found in the rownames of the data."),call. =FALSE)
       }
     }
-    if(is.data.frame(x)){
-      x<-data.frame(t(x))
+    if(is.data.frame(d)){
+      d<-data.frame(t(d))
     }
   }
-  gdOptions<-list(x=x,plotType="bar",group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=d,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   return(do.call("getGeneData", gdOptions))
 }
 
-getIsoData.ExpressionSet <- function(x,isoforms=NULL, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
-  isoDat<-exprs(x)[isoforms,]
+getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  isoDat<-exprs(d)[isoforms,]
   if(length(isoforms)>1) {
     isoDat<-t(isoDat)
   }
 
   #Start processing the factor options. Assuming values are either independant factors or colnames of pData
-  if(!is.null(group) & length(group)==1 & any(group %in% colnames(pData(x)))) {
-    group<-pData(x)[,group[1]]
+  if(!is.null(group) & length(group)==1 & any(group %in% colnames(pData(d)))) {
+    group<-pData(d)[,group[1]]
   }
-  if(!is.null(subGroup) & length(subGroup)==1 & any(subGroup %in% colnames(pData(x)))) {
-    subGroup<-pData(x)[,subGroup[1]]
+  if(!is.null(subGroup) & length(subGroup)==1 & any(subGroup %in% colnames(pData(d)))) {
+    subGroup<-pData(d)[,subGroup[1]]
   }
-  if(!is.null(highlight) & length(highlight)==1 & any(highlight %in% colnames(pData(x)))) {
-    highlight<-pData(x)[,highlight[1]]
+  if(!is.null(highlight) & length(highlight)==1 & any(highlight %in% colnames(pData(d)))) {
+    highlight<-pData(d)[,highlight[1]]
   }
-  if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(pData(x)))) {
-    facet<-pData(x)[,facet[1]]
+  if(!is.null(facet) & length(facet)==1 & any(facet %in% colnames(pData(d)))) {
+    facet<-pData(d)[,facet[1]]
   }
-  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(x)))) {
-    stack<-pData(x)[,stack[1]]
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(d)))) {
+    stack<-pData(d)[,stack[1]]
   }
-  gdOptions<-list(x=isoDat,plotType="bar",group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   return(do.call("getGeneData", gdOptions))
 }
 

@@ -71,7 +71,7 @@
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
 #' @export
-#' @seealso \code{\link[NicePlots]{niceBox}} \code{\link[NicePlots]{niceVio}} \code{\link[NicePlots]{niceBar}} \code{\link[NicePlots]{niceDots}} \code{\link[NicePlots]{niceDensity}}
+#' @seealso \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
 genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
@@ -82,9 +82,22 @@ genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","densit
 genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
 
   npOptions<-list(...)
+  #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
+  if(sum(gene==FALSE)==1 | sum(is.na(gene))==1) {gene<-NULL}
+  if((length(group)==1 & sum(group==FALSE)==1) | sum(is.na(group))==length(group)) {group<-NULL}
+  if((length(subGroup)==1 & sum(subGroup==FALSE)==1) | sum(is.na(subGroup))==length(subGroup)) {subGroup<-NULL}
+  if((length(stack)==1 & sum(stack==FALSE)==1) | sum(is.na(stack))==length(stack)) {stack<-NULL}
+  if((length(highlight)==1 & sum(highlight==FALSE)==1) | sum(is.na(highlight))==length(highlight)) {highlight<-NULL}
+
+  #Now lets get rid of incompatible options
   if(!is.null(highlight) & plotType[1]=="bar") {
     hightlight<-NULL
   }
+  if(!is.null(stack) & plotType[1]!="bar") {
+    stack<-NULL
+  }
+
+  #Setting default title of nothing was given
   if(main==TRUE) {
     if(length(gene)>1) {
       main<-paste0(c("Gene Expression:",paste0(gene,collapse=", ")),collapse=" ")
@@ -92,13 +105,18 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
       main<-paste0(gene, " Expression")
     }
   }
+
+  #Setting the legend to turn on automatically
   if(is.null(legend)){
     legend<-FALSE
     if(!is.null(subGroup) | !is.null(stack)| !is.null(highlight)) {
-      legend="Legend"
+      legend<-"Legend"
     }
   }
+  #Collecting the expresion and factor data
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+
+  #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
   if(is.null(subGroup)){
     subGroup<-FALSE
   } else {
@@ -124,6 +142,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     subGroup<-TRUE
   }
 
+  #Formatting options and adding new data
   npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
   if(groupByGene==TRUE & data$NullNames==TRUE) {
     if(is.factor(data$by)) {
@@ -132,6 +151,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
       npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by[,1])))))
     }
   }
+  #Calling NicePlots
   dataOut<-1
   if(plotType[1]=="box"){
     dataOut<-do.call("niceBox",npOptions)
@@ -173,18 +193,18 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
     }
   }
   dataOut<-1
-  if(plotType[1]=="box"){
+  if(grepl("box", plotType[1], ignore.case = TRUE)){
     dataOut<-do.call("niceBox",x$options)
-  } else if (plotType[1]=="dot") {
+  } else if (grepl("dot", plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceDots",x$options)
-  } else if (plotType[1]=="violin") {
+  } else if (grepl("vio", plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceVio",x$options)
-  } else if (plotType[1]=="bar") {
+  } else if (grepl("bar", plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceBar",x$options)
-  } else if (plotType[1]=="density") {
+  } else if (grepl("den",plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceDensity",x$options)
-  } else if (plotType[1]=="surface") {
-    npOptions<- append(list(plotType="surface"),x$options)
+  } else if (grepl("sur", plotType[1], ignore.case = TRUE)) {
+    x$options<- append(list(plotType="surface"),x$options)
     dataOut<-do.call("niceDensity",x$options)
   } else {
     stop("invalid plot type")

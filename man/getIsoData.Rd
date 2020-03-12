@@ -5,8 +5,9 @@
 \title{Extract Isoform Exrpression Data}
 \usage{
 getIsoData(
-  x,
+  d,
   isoforms = NULL,
+  plotType = plotType,
   group = NULL,
   subGroup = NULL,
   highlight = NULL,
@@ -21,9 +22,11 @@ getIsoData(
 )
 }
 \arguments{
-\item{x}{R data object with stored isoform annotation data; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
+\item{d}{R data object with stored isoform annotation data; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
 
 \item{isoforms}{character; A vector of isoform IDs to include in the output. Can be used in combination with with \code{genes}.}
+
+\item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
 
 \item{group}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.}
 
@@ -61,5 +64,5 @@ ToDo<-1
 
 }
 \seealso{
-\code{\link{isoPlot}}
+\code{\link{isoPlot}} \code{\link{showIsoforms}} \code{\link{getGeneData}}
 }
