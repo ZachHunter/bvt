@@ -44,7 +44,9 @@
 #' ToDo<-1
 #'
 #' @importFrom purrr map
+#' @importFrom dplyr select
 #' @importFrom tidyr gather
+#' @importFrom magrittr %>%
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link{genePlot}}, \code{\link{showIsoforms}}, \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
@@ -52,10 +54,12 @@ isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","v
 
 #' @importFrom purrr map
 #' @importFrom tidyr gather
+#' @importFrom dplyr select
+#' @importFrom magrittr %>%
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","suface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
+isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot","box","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=TRUE, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
 
   npOptions<-list(...)
   #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
@@ -177,7 +181,6 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot",
     if(length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subGroup)))>=1 & grepl("bar",plotType,ignore.case = TRUE) & isoStack==TRUE) {
       if("isoforms" %in% colnames(data$by) ){
         geneFact<-iso2gene[data$by$isoforms]
-        print(head(data$by))
         if(sum(data$by$group =="data" | is.na(data$by$group)) == length(data$by$group)){
           data$by$group <- factor(geneFact)
         } else {
@@ -197,7 +200,6 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot",
       } else {
         data$by <- data.frame(geneFact,geneData[,seq_len(dim(geneData)[2]-1)])
       }
-      print(head(data$by))
       subGroup<-TRUE
     }
   }
@@ -296,3 +298,5 @@ isoPlot.npData<-function(x, isoforms=NULL, gene=NULL, plotType=NULL, ...) {
 
   invisible(dataOut)
 }
+
+

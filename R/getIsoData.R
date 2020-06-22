@@ -1,3 +1,14 @@
+#There are to major S3 functions at play here: showIsoforms and getIsoData.
+#The showIsoforms function is used to extract and filter the isoform IDs based on user input with
+#S3 variants are used to customize the data extraction to the data type.
+#
+#The getIsoData is a bit more lightweight than it's getGeneData counterpart due to the
+#since the isoforms have already been identified. Moreover, once the data is is excrated
+#we can call on getGeneData to finish the pre-processing for calling NicePlots. As with
+#showIsoforms, S3 variants are used to customize the data extraction to the data type.
+#
+#Currently supported classes:
+# ExpessionSet, SeqExpressionSet, DESeqTransform, SummarizedExperiment, EList
 
 #' @title Display Isoform Annotation
 #' @description Display and filter isoform annotation and find those associated with given genes.
@@ -89,6 +100,7 @@ showIsoforms.default <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, 
   IsoDat
 }
 
+#' @importClassesFrom Biobase ExpressionSet
 #' @export
 showIsoforms.ExpressionSet <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, appris=FALSE,transcriptType=FALSE,symbol="GeneSymbol",ttype="transcript_type", ...) {
   IsoDat<-fData(x)
@@ -120,6 +132,7 @@ showIsoforms.SummarizedExperiment <- function(x, isoforms=NULL, genes=NULL,annot
   showIsoforms(IsoDat, isoforms=isoforms, genes=genes, annotation=annotation, appris=appris, transcriptType=transcriptType, symbol=symbol, ttype=ttype)
 }
 
+#' @importClassesFrom limma EList
 #' @export
 showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, appris=FALSE,transcriptType=FALSE,symbol="GeneSymbol",ttype="transcript_type", ...) {
   IsoDat<-x$genes
@@ -157,6 +170,7 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 getIsoData <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",d)}
 
 getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
   if(is.vector(d) | is.factor(d)) {
     d<-as.numeric(as.character(d))
   } else {
@@ -173,17 +187,22 @@ getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, s
       d<-data.frame(t(d))
     }
   }
-  gdOptions<-list(x=d,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(list(x=d,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE), idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
+#' @importClassesFrom Biobase ExpressionSet
+#' @importFrom purrr map
+#' @importFrom magrittr %>%
+#' @importFrom Biobase exprs pData fData
 getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
   isoDat<-exprs(d)[isoforms,]
   if(length(isoforms)>1) {
     isoDat<-t(isoDat)
   }
 
-  #Start processing the factor options. Assuming values are either independant factors or colnames of pData
+  #Start processing the factor options. Assuming values are either independent factors or colnames of pData
   if(!is.null(group) & length(group)==1 & any(group %in% colnames(pData(d)))) {
     group<-pData(d)[,group[1]]
   }
@@ -200,6 +219,144 @@ getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=N
     stack<-pData(d)[,stack[1]]
   }
   gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
+
+#' @importClassesFrom EDASeq SeqExpressionSet
+#' @importFrom EDASeq counts normCounts
+#' @importFrom Biobase pData fData
+getIsoData.SeqExpressionSet<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
+  if(sum(!is.na(normCounts(d)))==0 & useNormCounts==TRUE) {
+    warning("The normCounts slot in this data set is empty.\nUsing raw count data instead...\n", call. = FALSE)
+    useNormCounts<-FALSE
+  }
+  isoDat<-NULL
+  if(useNormCounts==TRUE) {
+    isoDat<-normCounts(d)[isoforms,]
+  } else {
+    isoDat<-counts(d)[isoforms,]
+  }
+
+  #Start processing the factor options. Assuming values are either independent factors or colnames of pData
+  if (!is.null(group) & length(group) == 1 & any(group %in% colnames(pData(d)))) {
+    group <- pData(d)[, group[1]]
+  }
+  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(pData(d)))) {
+    subGroup <- pData(d)[, subGroup[1]]
+  }
+  if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(pData(d)))) {
+    highlight <- pData(d)[, highlight[1]]
+  }
+  if (!is.null(facet) & length(facet) == 1 & any(facet %in% colnames(pData(d)))) {
+    facet <- pData(d)[, facet[1]]
+  }
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(d)))) {
+    stack<-pData(d)[,stack[1]]
+  }
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(gdOptions,idOptions)
+  return(do.call("getGeneData", gdOptions))
+}
+
+#' @importClassesFrom DESeq2 DESeqTransform
+#' @importFrom SummarizedExperiment assay colData rowData
+getIsoData.DESeqTransform<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
+  isoDat<-assay(d)[isoforms,]
+
+#Start processing the factor options. Assuming values are either independent factors or colnames of pData
+  if (!is.null(group) & length(group) == 1 & any(group %in% colnames(colData(d)))) {
+    group <- colData(d)[, group[1]]
+  }
+  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(colData(d)))) {
+    subGroup <- colData(d)[, subGroup[1]]
+  }
+  if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(colData(d)))) {
+    highlight <- colData(d)[, highlight[1]]
+  }
+  if (!is.null(facet) & length(facet) == 1 & any(facet %in% colnames(colData(d)))) {
+    facet <- colData(d)[, facet[1]]
+  }
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(d)))) {
+    stack<-colData(d)[,stack[1]]
+  }
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(gdOptions,idOptions)
+  return(do.call("getGeneData", gdOptions))
+}
+
+#' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom SummarizedExperiment assay colData rowData
+getIsoData.SummarizedExperiment<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
+  isoDat<-assay(d)[isoforms,]
+
+  #Start processing the factor options. Assuming values are either independent factors or colnames of pData
+  if (!is.null(group) & length(group) == 1 & any(group %in% colnames(colData(d)))) {
+    group <- colData(d)[, group[1]]
+  }
+  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(colData(d)))) {
+    subGroup <- colData(d)[, subGroup[1]]
+  }
+  if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(colData(d)))) {
+    highlight <- colData(d)[, highlight[1]]
+  }
+  if (!is.null(facet) & length(facet) == 1 & any(facet %in% colnames(colData(d)))) {
+    facet <- colData(d)[, facet[1]]
+  }
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(d)))) {
+    stack<-colData(d)[,stack[1]]
+  }
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(gdOptions,idOptions)
+  return(do.call("getGeneData", gdOptions))
+}
+
+#' @importClassesFrom limma EList
+getIsoData.EList<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+  idOptions<-list(...)
+  isoDat<-d$E[isoforms,]
+
+  #Start processing the factor options. Assuming values are either independent factors or colnames of pData
+  if (!is.null(group) & length(group) == 1 & any(group %in% colnames(d$targets) | group %in% colnames(d$design))) {
+    if(any(group %in% colnames(d$design))){
+      group <- d$design[,group[1]]
+    } else {
+      group <- d$targets[,group[1]]
+    }
+  }
+  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(d$targets) | subGroup %in% colnames(d$design))) {
+    if(any(subGroup %in% colnames(d$design))){
+      subGroup <- d$design[,subGroup[1]]
+    } else {
+      subGroup <- d$targets[,subGroup[1]]
+    }
+  }
+  if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(d$targets) | highlight %in% colnames(d$design))) {
+    if(any(highlight %in% colnames(d$design))){
+      highlight <- d$design[,highlight[1]]
+    } else {
+      highlight <- d$targets[,highlight[1]]
+    }
+  }
+  if (!is.null(facet) & length(facet) == 1 & any(facet %in% colnames(d$targets) | facet %in% colnames(d$design))) {
+    if(any(facet %in% colnames(d$design))){
+      facet <- d$design[,facet[1]]
+    } else {
+      facet <- d$targets[,facet[1]]
+    }
+  }
+  if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(d$targets) | stack %in% colnames(d$design))) {
+    if(any(stack %in% colnames(d$design))){
+      stack <- d$design[,stack[1]]
+    } else {
+      stack <- d$targets[,stack[1]]
+    }
+  }
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-append(gdOptions,idOptions)
+  return(do.call("getGeneData", gdOptions))
+}

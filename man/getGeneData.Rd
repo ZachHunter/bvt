@@ -46,8 +46,8 @@ Returns selected gene expression and factor data based on data type.
 }
 \details{
 These are a series of S3 methods that preprocess options based the data input type.
-Most Bioconductor datasets are supported. Once the prepocessing is complete,
-the generic version is called and for and the common preprossessing steps are performed
+Most Bioconductor data sets are supported. Once the pre-processing is complete,
+the generic version is called and for and the common pre-processing steps are performed
 prior to returning the data back to \code{\link[bvt]{genePlot}}.
 }
 \examples{
