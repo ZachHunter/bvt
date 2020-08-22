@@ -140,8 +140,8 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 }
 
 
-#' @title Extract Isoform Exrpression Data
-#' @description Preprocess Isoform expression data for downstrean analysis and plotting.
+#' @title Extract Isoform Expression Data
+#' @description Preprocess Isoform expression data for downstream analysis and plotting.
 #'
 #' @details
 #' ToDO

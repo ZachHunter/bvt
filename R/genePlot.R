@@ -113,7 +113,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
       legend<-"Legend"
     }
   }
-  #Collecting the expresion and factor data
+  #Collecting the expression and factor data
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
 
   #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots

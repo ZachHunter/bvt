@@ -2,7 +2,7 @@
 % Please edit documentation in R/getIsoData.R
 \name{getIsoData}
 \alias{getIsoData}
-\title{Extract Isoform Exrpression Data}
+\title{Extract Isoform Expression Data}
 \usage{
 getIsoData(
   d,
@@ -54,7 +54,7 @@ getIsoData(
 ToDo
 }
 \description{
-Preprocess Isoform expression data for downstrean analysis and plotting.
+Preprocess Isoform expression data for downstream analysis and plotting.
 }
 \details{
 ToDO
