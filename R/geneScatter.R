@@ -84,44 +84,21 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
   invisible(dataOut)
 }
 
-#' #' @importFrom purrr map
-#' #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
-#' #' @importFrom Biobase exprs pData fData
-#' #' @export
-#' genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
-#'   clOptions<-list(...)
-#'   for(opt in names(clOptions)) {
-#'     if(is.null(x$options[opt])){
-#'       append(x$options,list(opt=clOptions[[opt]]))
-#'     }else{
-#'       x$options[[opt]]<-clOptions[[opt]]
-#'     }
-#'   }
-#'   if(!is.null(x$options[["groupByGene"]])){
-#'     if(x$options[["groupByGene"]]==TRUE) {
-#'       x$options[["flipFacts"]]<-FALSE
-#'     } else {
-#'       x$options[["flipFacts"]]<-TRUE
-#'     }
-#'   }
-#'   dataOut<-1
-#'   if(grepl("box", plotType[1], ignore.case = TRUE)){
-#'     dataOut<-do.call("niceBox",x$options)
-#'   } else if (grepl("dot", plotType[1], ignore.case = TRUE)) {
-#'     dataOut<-do.call("niceDots",x$options)
-#'   } else if (grepl("vio", plotType[1], ignore.case = TRUE)) {
-#'     dataOut<-do.call("niceVio",x$options)
-#'   } else if (grepl("bar", plotType[1], ignore.case = TRUE)) {
-#'     dataOut<-do.call("niceBar",x$options)
-#'   } else if (grepl("den",plotType[1], ignore.case = TRUE)) {
-#'     dataOut<-do.call("niceDensity",x$options)
-#'   } else if (grepl("sur", plotType[1], ignore.case = TRUE)) {
-#'     x$options<- append(list(plotType="surface"),x$options)
-#'     dataOut<-do.call("niceDensity",x$options)
-#'   } else {
-#'     stop("invalid plot type")
-#'   }
-#'
-#'   invisible(dataOut)
-#' }
+#' @importFrom purrr map
+#' @importFrom NicePlots niceBox niceVio niceBar niceDensity
+#' @importFrom Biobase exprs pData fData
+#' @export
+geneScatter.npData<-function(x, gene=NULL, plotType=NULL, ...) {
+  clOptions<-list(...)
+  for(opt in names(clOptions)) {
+    if(is.null(x$options[opt])){
+      append(x$options,list(opt=clOptions[[opt]]))
+    }else{
+      x$options[[opt]]<-clOptions[[opt]]
+    }
+  }
+  dataOut<-1
+  do.call("niceScatter",x$options)
+  invisible(dataOut)
+}
 
