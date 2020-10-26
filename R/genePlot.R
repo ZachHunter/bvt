@@ -10,7 +10,7 @@
 #' If charactar values are given for factor input, \code{genePlot} will attempt to look up assocated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 #' The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
-#' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimentional kernal density plots (\code{\link[NicePlots]{niceDensity}}).
+#' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 #' \code{genePlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 #' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
@@ -18,12 +18,12 @@
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
-#' @param group factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
-#' @param subGroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
-#' @param highlight factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
-#' @param facet factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
-#' @param stack factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
-#' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.
+#' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
+#' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
+#' @param highlight factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
+#' @param facet factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
+#' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
+#' @param plotType character; Can be set to "box", "violin, "dot", "bar", "density" or "surface" for boxplots, violin plots, dot plots, bar plots, and kernel density plots, respectively.
 #' @param main character; The main plot title. Defaults to true for automated generation.
 #' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
 #' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
@@ -72,7 +72,7 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","suface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
@@ -177,11 +177,241 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
 #' @importFrom Biobase exprs pData fData
 #' @export
 genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
+  #the big difference with the npData version of genePlot is we are giving users the opportunity to add new factors to the npData object
+  #With the generic plot version of npData, x and by are set but different options can be turned on and off
+
   clOptions<-list(...)
+  if(is.null(plotType)) {
+    plotType<-x$plotType
+  }
+  if(sum(c("group","stack","highlight","subGroup") %in% names(clOptions),na.rm=T)>0){
+    #check for new group data
+    if("group" %in% names(clOptions)) {
+      if(is.vector(x$options$by)) {
+        if(length(clOptions[["group"]]) == length(x$options$by)) {
+          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subGroup[1],na.rm=TRUE)==0) {
+            x$options$by<-clOptions[["group"]]
+          } else {
+            x$options$by<-data.frame(group=clOptions[["group"]],temp=x$options$by)
+            if(x$options$subGroup[1]==TRUE) {
+              colnames(x$options$by)[2]<- "subGroup"
+            } else if (x$options$pointHighlights==TRUE){
+              colnames(x$options$by)[2]<- "highlight"
+            } else if (x$options$stack==TRUE){
+              colnames(x$options$by)[2]<- "stack"
+            }
+          }
+        } else {
+          warning(paste0("Length of group (",length(clOptions[["group"]]),") is not the same as existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+        #Now handle the case that by is a data.frame for group
+      } else {
+        if(length(clOptions[["group"]]) == dim(x$options$by)[1]) {
+          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subGroup[1],na.rm=TRUE) < dim(x$options$by)[2]) {
+            x$options$by[,1] <-clOptions[["group"]]
+            colnames(x$options$by)[1]<-"group"
+          } else {
+            x$options$by<-data.frame(group=clOptions[["group"]], x$options$by)
+          }
+        } else {
+          warning(paste0("Length of group (",length(clOptions[["group"]]),") is not the same as the existing factor data (",dim(x$options$by)[1],").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      }
+    }
+
+    #Check for new subGroup data
+    if ("subGroup" %in% names(clOptions)) {
+      if (is.vector(x$options$by)) {
+        if (length(clOptions[["subGroup"]]) == length(x$options$by)) {
+          if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
+            if("stack" %in% names(x$options)) {
+              if(x$options$stack[1]==TRUE) {
+                x$options$by<-data.frame(group=clOptions[["subGroup"]],stack=x$options$by)
+              } else {
+                x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
+                x$options[["subGroup"]]<-TRUE
+              }
+            } else {
+              x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
+              x$options[["subGroup"]]<-TRUE
+            }
+          } else {
+            if("pointHighlights" %in% names(x$options)) {
+              if(x$options$pointHighlights[1]==TRUE) {
+                x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=x$options$by)
+              } else {
+                x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
+                x$options[["subGroup"]]<-TRUE
+              }
+            } else {
+              x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
+              x$options[["subGroup"]]<-TRUE
+            }
+          }
+        } else {
+          warning(paste0("Length of subGroup (",length(clOptions[["subGroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      } else {
+        #by is a data.frame for subGroup
+        if (length(clOptions[["subGroup"]]) == dim(x$options$by)[1]) {
+          if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
+            if("stack" %in% names(x$options)) {
+              if(x$options$stack[1]==TRUE) {
+                if(x$options$subGroup[1]==TRUE) {
+                  if(dim(x$options$by)[2]>1) {
+                    x$options$by[,2]<-clOptions[["subGroup"]]
+                  } else {
+                    x$options$by <- data.frame(group=clOptions[["subGroup"]],stack=x$options$by[,1])
+                  }
+                } else {
+                  if(dim(x$options$by)[2]>1) {
+                    x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]],x$options$by[,-1])
+                    x$options[["subGroup"]]<-TRUE
+                  } else {
+                    x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
+                    x$options[["subGroup"]]<-TRUE
+                  }
+                }
+              } else {
+                if(dim(x$options$by)[2]>1) {
+                  x$options$by[,2]<-clOptions[["subGroup"]]
+                  x$options[["subGroup"]]<-TRUE
+                } else {
+                  x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
+                  x$options[["subGroup"]]<-TRUE
+                }
+              }
+            } else {
+              if(dim(x$options$by)[2]>1) {
+                x$options$by[,2]<-clOptions[["subGroup"]]
+                x$options[["subGroup"]]<-TRUE
+              } else {
+                x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
+                x$options[["subGroup"]]<-TRUE
+              }
+            }
+          } else {
+            if("pointHighlights" %in% names(x$options)) {
+              if(x$options$pointHighlights[1]==TRUE) {
+                if(x$options$subGroup[1]==TRUE) {
+                  if(dim(x$options$by)[2]>1) {
+                    x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
+                  } else {
+                    x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=by[,1])
+                  }
+                } else {
+                  if(dim(x$options$by)[2]>1) {
+                    x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]],by[,-1])
+                    x$options[["subGroup"]]<-TRUE
+                  } else {
+                    x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=by[,1])
+                  }
+                }
+              } else {
+                if(dim(x$options$by)[2]>1) {
+                  x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
+                  x$options[["subGroup"]]<-TRUE
+                } else {
+                  x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]])
+                  x$options[["subGroup"]]<-TRUE
+                }
+              }
+            } else {
+              if(dim(x$options$by)[2]>1) {
+                x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
+                x$options[["subGroup"]]<-TRUE
+              } else {
+                x$options$by<-data.frame(group=by[,1],subGroup=clOptions[["subGroup"]])
+                x$options[["subGroup"]]<-TRUE
+              }
+            }
+          }
+        } else {
+          warning(paste0("Length of subGroup (",length(clOptions[["subGroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      }
+    }
+
+    #Check for new stack data
+    if("stack" %in% names(clOptions)) {
+      if (is.vector(x$options$by)) {
+        if (length(clOptions[["stack"]]) == length(x$options$by)) {
+          if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
+            x$options$by<-data.frame(group=x$options$by,stack=clOptions[["stack"]])
+            x$options[["stack"]]<-TRUE
+          }
+        } else {
+          warning(paste0("Length of stack (",length(clOptions[["stack"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      } else {
+        #by is a data.frame for stack
+        if (length(clOptions[["stack"]]) == dim(x$options$by)[1]) {
+          if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
+            if(dim(x$options$by)[2]>2) {
+              if(x$options$subGroup[1]==TRUE) {
+                x$options$by[,3]<-clOptions[["stack"]]
+              } else {
+                x$options$by[,2]<-clOptions[["stack"]]
+              }
+              x$options[["stack"]]<-TRUE
+            } else {
+              if(x$options$subGroup[1]==TRUE) {
+                x$options$by<-data.frame(x$options$by,stack=clOptions[["stack"]])
+              } else {
+                x$options$by[,2]<-clOptions[["stack"]]
+              }
+              x$options[["stack"]]<-TRUE
+            }
+          }
+        } else {
+          warning(paste0("Length of stack (",length(clOptions[["stack"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      }
+    }
+
+    #Check for new highlight data
+    if("highlight" %in% names(clOptions)) {
+      if (is.vector(x$options$by)) {
+        if (length(clOptions[["highlight"]]) == length(x$options$by)) {
+          if (!((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar"))  {
+            x$options$by<-data.frame(group=x$options$by,highlight=clOptions[["highlight"]])
+            x$options[["pointHighlights"]]<-TRUE
+          }
+        } else {
+          warning(paste0("Length of highlight (",length(clOptions[["highlight"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      } else {
+        #by is a data.frame for highlight
+        if (length(clOptions[["highlight"]]) == dim(x$options$by)[1]) {
+          if (!((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar"))  {
+            if(dim(x$options$by)[2]>2) {
+              if(x$options$subGroup[1]==TRUE) {
+                x$options$by[,3]<-clOptions[["highlight"]]
+                x$options[["highlight"]]<-TRUE
+              } else {
+                x$options$by[,2]<-clOptions[["highlight"]]
+                x$options[["pointHighlights"]]<-TRUE
+              }
+            } else {
+              if(x$options$subGroup[1]==TRUE) {
+                x$options$by<-data.frame(x$options$by,highlight=clOptions[["highlight"]])
+                x$options[["pointHighlights"]]<-TRUE
+               } else {
+                x$options$by[,2]<-clOptions[["highlight"]]
+                x$options[["pointHighlights"]]<-TRUE
+              }
+            }
+          }
+        } else {
+          warning(paste0("Length of highlight (",length(clOptions[["highlight"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+        }
+      }
+    }
+  }
   for(opt in names(clOptions)) {
     if(is.null(x$options[opt])){
       append(x$options,list(opt=clOptions[[opt]]))
-    }else{
+    } else {
       x$options[[opt]]<-clOptions[[opt]]
     }
   }
@@ -201,7 +431,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
     dataOut<-do.call("niceVio",x$options)
   } else if (grepl("bar", plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceBar",x$options)
-  } else if (grepl("den",plotType[1], ignore.case = TRUE)) {
+  } else if (grepl("dedan",plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceDensity",x$options)
   } else if (grepl("sur", plotType[1], ignore.case = TRUE)) {
     x$options<- append(list(plotType="surface"),x$options)

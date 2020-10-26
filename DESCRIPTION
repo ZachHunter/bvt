@@ -11,5 +11,5 @@ Encoding: UTF-8
 LazyData: true
 Depends: NicePlots,Biobase
 Imports: dplyr,tidyr,tibble,RColorBrewer,purrr,ggplot2,EDASeq,DESeq2,edgeR,limma,KernSmooth,beeswarm,boot,SummarizedExperiment,magrittr
-Suggests: shiny,rgl
+Suggests: shiny,rgl,miniUI
 RoxygenNote: 7.1.1

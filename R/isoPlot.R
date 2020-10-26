@@ -1,37 +1,37 @@
 #' @title Plot Isoform Expression Data
-#' @description Vissualize isoform expression data.
+#' @description Visualize isoform expression data.
 #'
 #' @details
-#' The \code{isoPlot} is designed to make vissualizatin of isoform expression data simple and easy for R novices and bioinformaticians alike.
-#' The function is an S3 generic that accept various R and Bioconductor datasets as input and exracts the expression, factor and annotation data from them according to type.
-#' The factors allow for spliting expression data from one or more genes into groups and for plot types with data point overlays. Points can be colored by factors levels as well.
+#' The \code{isoPlot} is designed to make visualization of isoform expression data simple and easy for R novices and bioinformaticians alike.
+#' The function is an S3 generic that accept various R and Bioconductor data sets as input and extracts the expression, factor and annotation data from them according to type.
+#' The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays. Points can be colored by factors levels as well.
 #' If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{isoPlot} will attempt to look up the isoforms in the associated with the gene in the annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 #' If no matches are found the row names of are checked of the expression data are check for matches as well.
-#' If charactar values are given for factor input, \code{isoPlot} will attempt to look up assocated phenotype data (e.g. \code{\link[Biobase]{pData}}).
+#' If character values are given for factor input, \code{isoPlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{isoPlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 #' The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
-#' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimentional kernal density plots (\code{\link[NicePlots]{niceDensity}}).
+#' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-#' \code{isoPlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+#' \code{isoPlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 #' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
 #' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
 #' @param isoforms character; Isoform IDs or a vector of isoform IDS to plot.
 #' @param gene character; Gene or vector of gene names. This is an optional setting that will return all of the isoforms associated with the gene.
-#' @param appris boolean or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restirct isoforms to those with the character value matching a substring of the appris tag. Appris collumn is determined by the first collumn name to containing 'Appris' (case insenstive).
-#' @param transcriptType character; Returns only those isoforms where the transcript type collumn has a substring that matches the character value supplied such as 'protein' in 'protein_coding'. The transcript type collumn is determined by the \code{ttype} option.
+#' @param appris boolean or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).
+#' @param transcriptType character; Returns only those isoforms where the transcript type column has a substring that matches the character value supplied such as 'protein' in 'protein_coding'. The transcript type column is determined by the \code{ttype} option.
 #' @param asPercentage boolean; If set to \code{\link{TRUE}}, the isoform expression is given as a percetange of total gene expression (defaults to \code{\link{FALSE}})
-#' @param group factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
-#' @param subGroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
-#' @param highlight factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
-#' @param facet factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
-#' @param stack factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
-#' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.
+#' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
+#' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
+#' @param highlight factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
+#' @param facet factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
+#' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
+#' @param plotType character; Can be set to "box", "violin, "dot", "bar", "denisity" or "surface" for box plots, violin plots, dot plots, bar plots, and kernel density plots, respectively.
 #' @param main character; The main plot title. Defaults to true for automated generation.
 #' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
 #' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
-#' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
+#' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
@@ -50,7 +50,7 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link{genePlot}}, \code{\link{showIsoforms}}, \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","suface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
+isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom tidyr gather

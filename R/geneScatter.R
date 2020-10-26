@@ -88,7 +88,7 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-geneScatter.npData<-function(x, gene=NULL, plotType=NULL, ...) {
+geneScatter.npData<-function(x, genes=NULL, ...) {
   clOptions<-list(...)
   for(opt in names(clOptions)) {
     if(is.null(x$options[opt])){
