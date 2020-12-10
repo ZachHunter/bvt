@@ -52,9 +52,9 @@ genePlot(
 
 \item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
 
-\item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
+\item{useNormCounts}{logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
 
-\item{...}{Any paramenter recognized by \code{NicePlots} functions.}
+\item{...}{Any parameter recognized by \code{NicePlots} functions.}
 }
 \value{
 an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
@@ -87,18 +87,18 @@ data(iris)
 genePlot(iris$Sepal.Length,gene=NA, highlight=iris$Species, plotType="dot", pointSize=.75,
 width=.5, pointShape=1, main="Distribution of Sepal Length")
 
-#Kernal denisty plots
+#Kernel density plots
 genePlot(iris$Sepal.Length,gene=NA, group=iris$Species, plotType="density",
 main="Distribution of Sepal Lengths by Species")
 
-#Plotting multiple collumns:
+#Plotting multiple columns:
 genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
 highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
 
-#Multiple collumns with grouping factors:
+#Multiple columns with grouping factors:
 genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
 
-#Same with grouping order reveresed
+#Same with grouping order reversed
 genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
 

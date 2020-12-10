@@ -30,8 +30,8 @@
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
-#' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
-#' @param ... Any paramenter recognized by \code{NicePlots} functions.
+#' @param useNormCounts logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
+#' @param ... Any parameter recognized by \code{NicePlots} functions.
 #'
 #' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
 #'
@@ -45,18 +45,18 @@
 #' genePlot(iris$Sepal.Length,gene=NA, highlight=iris$Species, plotType="dot", pointSize=.75,
 #' width=.5, pointShape=1, main="Distribution of Sepal Length")
 #'
-#' #Kernal denisty plots
+#' #Kernel density plots
 #' genePlot(iris$Sepal.Length,gene=NA, group=iris$Species, plotType="density",
 #' main="Distribution of Sepal Lengths by Species")
 #'
-#' #Plotting multiple collumns:
+#' #Plotting multiple columns:
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
 #' highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
 #'
-#' #Multiple collumns with grouping factors:
+#' #Multiple columns with grouping factors:
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
 #'
-#' #Same with grouping order reveresed
+#' #Same with grouping order reversed
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 #' groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
 #'
@@ -113,6 +113,10 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
       legend<-"Legend"
     }
   }
+  if(legend==TRUE) {
+    legend<-"Legend"
+  }
+
   #Collecting the expression and factor data
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
 
@@ -146,28 +150,33 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
   if(groupByGene==TRUE & data$NullNames==TRUE) {
     if(is.factor(data$by)) {
-      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by)))))
+
+      npOptions$subGroupLabels<-rep("",length(levels(data$by)))
     } else {
-      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by[,1])))))
+      npOptions$subGroupLabels<-rep("",length(levels(data$by[,1])))
     }
   }
   #Calling NicePlots
   dataOut<-1
-  if(plotType[1]=="box"){
-    dataOut<-do.call("niceBox",npOptions)
-  } else if (plotType[1]=="dot") {
-    dataOut<-do.call("niceDots",npOptions)
-  } else if (plotType[1]=="violin") {
-    dataOut<-do.call("niceVio",npOptions)
-  } else if (plotType[1]=="bar") {
-    dataOut<-do.call("niceBar",npOptions)
-  } else if (plotType[1]=="density") {
-    dataOut<-do.call("niceDensity",npOptions)
-  } else if (plotType[1]=="surface") {
-    npOptions<- append(list(plotType="surface"),npOptions)
-    dataOut<-do.call("niceDensity",npOptions)
+  if(shiny[1]==TRUE) {
+    dataOut<-genePlot(shinyGenePlot(data=x, genes=gene, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factors=NULL, factorList=colnames(pData(x)), gpOptions=npOptions))
   } else {
-    stop("invalid plot type")
+    if(plotType[1]=="box"){
+      dataOut<-do.call("niceBox",npOptions)
+    } else if (plotType[1]=="dot") {
+      dataOut<-do.call("niceDots",npOptions)
+    } else if (plotType[1]=="violin") {
+      dataOut<-do.call("niceVio",npOptions)
+    } else if (plotType[1]=="bar") {
+      dataOut<-do.call("niceBar",npOptions)
+    } else if (plotType[1]=="density") {
+      dataOut<-do.call("niceDensity",npOptions)
+    } else if (plotType[1]=="surface") {
+      npOptions<- append(list(plotType="surface"),npOptions)
+      dataOut<-do.call("niceDensity",npOptions)
+    } else {
+      stop("invalid plot type")
+    }
   }
   invisible(dataOut)
 }
@@ -422,6 +431,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
       x$options[["flipFacts"]]<-TRUE
     }
   }
+
   dataOut<-1
   if(grepl("box", plotType[1], ignore.case = TRUE)){
     dataOut<-do.call("niceBox",x$options)
@@ -431,7 +441,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
     dataOut<-do.call("niceVio",x$options)
   } else if (grepl("bar", plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceBar",x$options)
-  } else if (grepl("dedan",plotType[1], ignore.case = TRUE)) {
+  } else if (grepl("den",plotType[1], ignore.case = TRUE)) {
     dataOut<-do.call("niceDensity",x$options)
   } else if (grepl("sur", plotType[1], ignore.case = TRUE)) {
     x$options<- append(list(plotType="surface"),x$options)
