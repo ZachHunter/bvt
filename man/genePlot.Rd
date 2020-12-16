@@ -57,7 +57,7 @@ genePlot(
 \item{...}{Any parameter recognized by \code{NicePlots} functions.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Vissualize gene expression data.

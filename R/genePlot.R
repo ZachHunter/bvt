@@ -33,7 +33,7 @@
 #' @param useNormCounts logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
 #' @param ... Any parameter recognized by \code{NicePlots} functions.
 #'
-#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
 #' #While designed for use with bioconductor datasets,

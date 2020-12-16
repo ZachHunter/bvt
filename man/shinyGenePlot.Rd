@@ -30,7 +30,6 @@ data, genes, geneList, factors, factorList, theme, gpOptions
 \examples{
 ToDo<-1
 
-
 }
 \seealso{
 \code{\link[bvt]{genePlot}}
