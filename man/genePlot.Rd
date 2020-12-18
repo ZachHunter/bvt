@@ -60,7 +60,7 @@ genePlot(
 an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
-Vissualize gene expression data.
+Visualize gene expression data for Nick.
 }
 \details{
 The \code{genePlot} is designed to make vissualizatin of gene expression data simple and easy for R novices and bioinformaticians alike.
@@ -75,7 +75,7 @@ The \code{plotType} options supported correspond to \code{NicePlots} functions a
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 \code{genePlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
-Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
+Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. Oh and hey Nick, this ones for you!
 }
 \examples{
 #While designed for use with bioconductor datasets,

@@ -967,8 +967,6 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       }
     })
 
-
-
     shiny::observeEvent(input$lineColors, {
       cCol<-shiny::renderText(input$lineColors)
       if(is.null(cCol()) | cCol()=="") {
@@ -1001,16 +999,15 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       plotOptions$pointLaneWidth<-input$pointLaneWidth
     })
 
-    # observeEvent(input$errorBarLineType, {
-    #   cVal<-renderText(input$errorBarLineType)
-    #   cTheme<-renderText({input$theme})
-    #   if(is.null(cVal()) | cVal()=="") {
-    #     plotOptions$errorBarLineType<-eval(parse(text=cTheme()))$errorBarLineTypeBP
-    #   } else {
-    #     cVal<-as.numeric(trimws(unlist(strsplit(cVal(), split=","))))
-    #     plotOptions$errorBarLineType<-cVal
-    #   }
-    # })
+    observeEvent(input$errorBarLineType, {
+      cVal<-renderText(input$errorBarLineType)
+      if(is.null(cVal()) | cVal()=="") {
+        plotOptions$errorBarLineType<-NULL
+      } else {
+        cVal<-as.numeric(trimws(unlist(strsplit(cVal(), split=","))))
+        plotOptions$errorBarLineType<-cVal
+      }
+    })
 
     shiny::observeEvent(input$errorBarCapType, {
       cVal<-shiny::renderText(input$errorBarCapType)
