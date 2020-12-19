@@ -176,7 +176,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       ),
       miniUI::miniTabPanel("Plot Options", icon = shiny::icon("chart-area"),
         miniUI::miniContentPanel(padding = 5,
-          shiny::fillCol(
+          shiny::fillCol(height = "85%",
             shiny::fillRow(
               shiny::selectInput("plotType", label = ("Select PlotType"),
                 choices = list("Box Plot" = "box", "Dot Plot" = "dot", "Violin Plot" = "violin", "Bar Plot"="bar", "Density Plot"="density", "Surface Plot"="surface"),
@@ -195,19 +195,18 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
               shiny::checkboxInput("legend", label = "Plot Legend", value = FALSE,width="95%"),
               shiny::textInput("legendTitle", label = "Legend Title", value = "Legend",width="95%"),
               shiny::sliderInput("legendSize", label="Scale Legend", min=.25,max=2, value=.9,width="95%")
-            ),
+            )
+          ),
+          shiny::fillCol(height = "85%",
             shiny::fillRow(
               shiny::selectInput("logScaleY", label = "Log Scale",
-                          choices = list("None"= FALSE, "2" = 2, "10" =10, "e" = exp(1)),
-                          selected = 1,width="95%"),
+                                 choices = list("None"= FALSE, "2" = 2, "10" =10, "e" = exp(1)),
+                                 selected = 1,width="95%"),
               shiny::selectInput("logScaleX", label = "Log Scale X (Contour)",
-                          choices =  list("None"= FALSE, "2" = 2, "10" =10, "e" = exp(1)),
-                          selected = 1,width="95%"),
+                                 choices =  list("None"= FALSE, "2" = 2, "10" =10, "e" = exp(1)),
+                                 selected = 1,width="95%"),
               shiny::sliderInput("logAdjustment", label="Log Adjustment", min=0,max=1, step=0.05, value=1,width="95%",)
-            )
-
-          ),
-          shiny::fillCol(
+            ),
             shiny::fillRow(
               shiny::textInput("ylab",label="Y-Axis Label",width="95%"),
               shiny::checkboxInput("expLabels", label = "Exp Labels (Log)", value = FALSE,width="95%"),
@@ -217,7 +216,9 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
               shiny::textInput("groupNames",label="Group Labels",width="95%",value = NULL),
               shiny::textInput("subGroupNames",label="Subgroup Labels",width="95%",value = NULL),
               shiny::checkboxInput("rotateLabels", label = "Rotate Group Labels", value = FALSE,width="95%")
-            ),
+            )
+          ),
+          shiny::fillCol(height = "85%",
             shiny::fillRow(
               shiny::numericInput("minorTick",label="Minor Ticks",min=0, value= 4, step=1, width="95%"),
               shiny::checkboxInput("showMinorGuide", label = "Minor Guides", value = FALSE,width="95%"),
@@ -225,24 +226,30 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
             ),
             shiny::fillRow(
               shiny::selectInput("aggFun", label = "Central Tendancy",
-                          choices = list("Median"= "median", "Mean" = "mean"),
-                          selected = 1,width="95%"),
+                      choices = list("Median"= "median", "Mean" = "mean"),
+                      selected = 1,width="95%"),
               shiny::selectInput("errFun", label = "Error Measure",
-                          choices = list("Standard Deviation"= "sd", "Standard Error" = "se","Range"="range","95-CI T-Distribution"="t95ci","95-CI Bootstrap"="boot95ci"),
-                          selected = 2,width="95%"),
+                      choices = list("Standard Deviation"= "sd", "Standard Error" = "se","Range"="range","95-CI T-Distribution"="t95ci","95-CI Bootstrap"="boot95ci"),
+                      selected = 2,width="95%"),
               shiny::numericInput("errorMultiple", label="Error Multiplier", value=2,min=0,width="95%",step = 1)
-            )
-          ),
-          shiny::fillCol(height = "50%",
-              shiny::fillRow(
+            ),
+            shiny::fillRow(
               shiny::checkboxInput("errorBars", label = "Draw Error Bars", value = TRUE, width="95%"),
               shiny::sliderInput("phi", label = "Phi Rotation (persp)", min=-180,max=180, value=30,width="95%"),
               shiny::sliderInput("theta", label="Theta Rotation (persp)", min=-180,max=180, value=30,width="95%")
-            ),
+            )
+
+          ),
+          shiny::fillCol(height = "50%",
             shiny::fillRow(
               shiny::checkboxInput("rug", label = "Density Rug Plot", value = FALSE,width="95%"),
               shiny::checkboxInput("trimCurves", label="Trim Curves to Data", value=TRUE, width="95%"),
               shiny::sliderInput("vioBoxWidth", label="Violin Box Width", min=0,max=1.5,step=.1,value=.4,width="95%")
+            ),
+            shiny::fillRow(
+              shiny::textInput("yLim",label="Data Limits (min,max)",width="95%",value = NULL),
+              shiny::textInput("xLim",label="Y Axis Limits",width="95%",value = NULL),
+              shiny::checkboxInput("sidePlot", label="Flip X/Y Axses", value=FALSE, width="95%")
             )
           )
         )
@@ -372,8 +379,8 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
           shiny::fillCol(
             shiny::fillRow(
               shiny::checkboxInput("useRgl", label="Use RGL for 3D",value =TRUE, width="95%"),
-              shiny::checkboxInput("sidePlot", label="Flip X/Y Axses", value=FALSE, width="95%"),
-              shiny::sliderInput("curvePoints",label="Curve/Bootstrap Sampling",min=50,max=5000,step=50,value=1000, width="95%")
+              br(),
+              shiny::sliderInput("curvePoints",label="Curve/Bootstrap Sampling",min=20,max=1000,step=20,value=200, width="95%")
             ),
             shiny::fillRow(
               shiny::checkboxInput("verbose", label="Verbose Output", value=FALSE, width="95%"),
@@ -392,16 +399,16 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
               shiny::verbatimTextOutput("codeExample", placeholder = TRUE)
             )
           ),
-          shiny::h4("Data Summary"),
-          shiny::fillCol(
-            shiny::fillRow(
-              shiny::tableOutput("descriptive")
-            )
-          ),
           shiny::h4("Statistics"),
           shiny::fillCol(
             shiny::fillRow(
               shiny::verbatimTextOutput("stats", placeholder = TRUE)
+            )
+          ),
+          shiny::h4("Data Summary"),
+          shiny::fillCol(
+            shiny::fillRow(
+              shiny::tableOutput("descriptive")
             )
           )
         )
@@ -522,7 +529,9 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                  extendTicks=plotOptions$extendTick,
                                  verbose=plotOptions$verbose,
                                  curvePoints=plotOptions$curvePoints,
-                                 sidePlot=plotOptions$sidePlot)
+                                 sidePlot=plotOptions$sidePlot,
+                                 xLim=plotOptions$xLim,
+                                 yLim=plotOptions$yLim)
 
       if(RSOveride$rso==TRUE) {
         RSOveride$rso<-FALSE
@@ -680,14 +689,45 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
     })
 
 
-    ######Plot Options Minitab
+    ######Plot Options Minitab#######################################
+
     shiny::observeEvent(input$plotType, {
       pt<-shiny::renderText(shiny::req({input$plotType}))
       RSOveride$rso<-TRUE
       plotOptions$plotType<-pt()
+      preVal<-shiny::renderText(input$axisPrepend)
+      aVal<-shiny::renderText(input$axisAppend)
+      axisText<-c("","")
       if(pt() != "density" & pt() != "surface") {
         plotOptions$logScale<-plotOptions$logScale[1]
+        if(is.null(preVal())) {
+          axisText[1]<-""
+        } else {
+          axisText[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText[2]<-""
+        } else {
+          axisText[2]<-aVal()
+        }
+      } else {
+        if(pt() != "density" | length(plotOptions$gene)>1){
+          plotOptions$logScale<-plotOptions$logScale
+        }
+        axisText<-list(x=axisText,y=axisText)
+        if(is.null(preVal())) {
+          axisText$x[1]<-""
+        } else {
+          axisText$x[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText$x[2]<-""
+        } else {
+          axisText$x[2]<-aVal()
+        }
+        axisText$y<-axisText$x
       }
+      plotOptions$axisText<-axisText
     })
 
     shiny::observeEvent(input$main, {
@@ -895,6 +935,30 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
 
     shiny::observeEvent(input$vioBoxWidth, {
       plotOptions$vioBoxWidth<-input$vioBoxWidth
+    })
+
+    shiny::observeEvent(input$xLim, {
+      limVal<-renderText(req( input$xLim ))
+      xlimVal<-as.numeric(trimws(unlist(strsplit(gsub("[\\(\\)]","",limVal()),split = ","))))
+      if(length(xlimVal) < 2 | is.null(limVal()) | limVal()=="" | sum(is.na(xlimVal))>0) {
+        plotOptions$xLim<- NULL
+      } else {
+        plotOptions$xLim<-xlimVal[1:2]
+      }
+    })
+
+    shiny::observeEvent(input$yLim, {
+      limVal<-renderText(req( input$yLim ))
+      ylimVal<-as.numeric(trimws(unlist(strsplit(gsub("[\\(\\)]","",limVal()),split = ","))))
+      if(length(ylimVal) < 2 | is.null(limVal()) | limVal()=="" | sum(is.na(ylimVal))>0) {
+        plotOptions$yLim<- NULL
+      } else {
+        plotOptions$yLim<-ylimVal[1:2]
+      }
+    })
+
+    shiny::observeEvent(input$sidePlot, {
+      plotOptions$sidePlot<-input$sidePlot
     })
 
     #####Format Minitab
@@ -1162,15 +1226,31 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       preVal<-shiny::renderText(input$axisPrepend)
       aVal<-shiny::renderText(input$axisAppend)
       axisText<-c("","")
-      if(is.null(preVal())) {
-        axisText[1]<-""
+      ptVal<-shiny::renderText(input$plotType)
+      if(ptVal() == "density" | ptVal()=="surface") {
+        axisText<-list(x=axisText,y=axisText)
+        if(is.null(preVal())) {
+          axisText$x[1]<-""
+        } else {
+          axisText$x[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText$x[2]<-""
+        } else {
+          axisText$x[2]<-aVal()
+        }
+        axisText$y<-axisText$x
       } else {
-        axisText[1]<-preVal()
-      }
-      if(is.null(aVal())) {
-        axisText[2]<-""
-      } else {
-        axisText[2]<-aVal()
+        if(is.null(preVal())) {
+          axisText[1]<-""
+        } else {
+          axisText[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText[2]<-""
+        } else {
+          axisText[2]<-aVal()
+        }
       }
       plotOptions$axisText<-axisText
     })
@@ -1179,15 +1259,31 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       preVal<-shiny::renderText(input$axisPrepend)
       aVal<-shiny::renderText(input$axisAppend)
       axisText<-c("","")
-      if(is.null(preVal())) {
-        axisText[1]<-""
+      ptVal<-shiny::renderText(input$plotType)
+      if(ptVal() == "density" | ptVal()=="surface") {
+        axisText<-list(x=axisText,y=axisText)
+        if(is.null(preVal())) {
+          axisText$x[1]<-""
+        } else {
+          axisText$x[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText$x[2]<-""
+        } else {
+          axisText$x[2]<-aVal()
+        }
+        axisText$y<-axisText$x
       } else {
-        axisText[1]<-preVal()
-      }
-      if(is.null(aVal())) {
-        axisText[2]<-""
-      } else {
-        axisText[2]<-aVal()
+        if(is.null(preVal())) {
+          axisText[1]<-""
+        } else {
+          axisText[1]<-preVal()
+        }
+        if(is.null(aVal())) {
+          axisText[2]<-""
+        } else {
+          axisText[2]<-aVal()
+        }
       }
       plotOptions$axisText<-axisText
     })
@@ -1260,10 +1356,6 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
     #Advanced Tab
     shiny::observeEvent(input$useRgl, {
       plotOptions$LegendBG<-input$useRgl
-    })
-
-    shiny::observeEvent(input$sidePlot, {
-      plotOptions$sidePlot<-input$sidePlot
     })
 
     shiny::observeEvent(input$curvePoints, {
