@@ -159,7 +159,12 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   #Calling NicePlots
   dataOut<-1
   if(shiny[1]==TRUE) {
-    dataOut<-genePlot(shinyGenePlot(data=x, genes=gene, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factors=NULL, factorList=colnames(pData(x)), gpOptions=npOptions))
+    dataOut<-shinyGenePlot(data=x, genes=gene, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factorList=colnames(pData(x)), gpOptions=npOptions, dbName=deparse(substitute(x)))
+    dataOut$options$shiny<-FALSE
+    dataOut$options<-dataOut$options[which(names(dataOut$options)!="RSOverride")]
+    print(dataOut$optiona$gene)
+    plot(dataOut)
+    invisible(dataOut)
   } else {
     if(plotType[1]=="box"){
       dataOut<-do.call("niceBox",npOptions)
@@ -172,13 +177,14 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     } else if (plotType[1]=="density") {
       dataOut<-do.call("niceDensity",npOptions)
     } else if (plotType[1]=="surface") {
-      npOptions<- append(list(plotType="surface"),npOptions)
+      pOptions<- append(list(plotType="surface"),npOptions)
       dataOut<-do.call("niceDensity",npOptions)
     } else {
       stop("invalid plot type")
     }
+    invisible(dataOut)
   }
-  invisible(dataOut)
+
 }
 
 #' @importFrom purrr map
@@ -186,7 +192,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
 #' @importFrom Biobase exprs pData fData
 #' @export
 genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
-  #the big difference with the npData version of genePlot is we are giving users the opportunity to add new factors to the npData object
+  #the big difference with the npData version of genePlot over the NicePlots equivalents is we are giving users the opportunity to add new factors to the npData object
   #With the generic plot version of npData, x and by are set but different options can be turned on and off
 
   clOptions<-list(...)

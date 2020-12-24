@@ -104,9 +104,9 @@
 #' @param data \code{\link[Biobase]{ExpressionSet}} or other R data object containing the data and possibly feature or phenotype information. While intended for use with Bioconductor objects, \code{\link[base]{data.frame}}, \code{\link[base]{matrix}}, and \code{\link[tibble]{tibble}} can also be used.
 #' @param genes character vector; names of genes already in use
 #' @param geneList character vector; List of all possible gene names including expression data row names and gene symbols if in use.
-#' @param factors active factors. Placeholder
 #' @param factorList all possible factors from phenotype data.
 #' @param gpOptions active options from the command line. Placeholder.
+#' @param dbName character; Name of the database passed to \code{\link[bvt]{genePlot}}.
 #'
 #' @examples
 #' ToDo<-1
@@ -116,7 +116,7 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom graphics abline par rect
 #' @seealso \code{\link[bvt]{genePlot}}
-shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions) {
+shinyGenePlot <- function(data, genes, geneList, factorList, gpOptions,dbName="data") {
   if(requireNamespace("shiny",quietly = TRUE) & requireNamespace("colourpicker",quietly = TRUE) & requireNamespace("miniUI",quietly = TRUE) == FALSE){
     stop("Missing required libraries for interactive shiny UI. Please install shiny, miniUI and colourpicker.")
   }
@@ -379,7 +379,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
           shiny::fillCol(
             shiny::fillRow(
               shiny::checkboxInput("useRgl", label="Use RGL for 3D",value =TRUE, width="95%"),
-              br(),
+              shiny::numericInput("nlevels",label="# of Contour Levels", value = 8,min = 3,max=100,step = 1, width="95%"),
               shiny::sliderInput("curvePoints",label="Curve/Bootstrap Sampling",min=20,max=1000,step=20,value=200, width="95%")
             ),
             shiny::fillRow(
@@ -396,7 +396,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
           shiny::h4("Actual genePlot Code"),
           shiny::fillCol(height="30%",
             shiny::fillRow(
-              shiny::verbatimTextOutput("codeExample", placeholder = TRUE)
+              shiny::textOutput("codeExample",)
             )
           ),
           shiny::h4("Statistics"),
@@ -424,7 +424,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
   server <- function(input, output, session) {
 
     aGenes<-shiny::reactiveValues(g=genes)
-    RSOveride<-shiny::reactiveValues(rso=TRUE, npData=NULL)
+    RSOveride<-shiny::reactiveValues(rso=TRUE, npData=NULL, options=NULL)
     plotOptions<-shiny::reactiveValues(gene=genes,
                                 plotType="box",
                                 drawPoints=TRUE,
@@ -452,7 +452,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                 vioBoxWidth=.4,
                                 normalize=FALSE,
                                 groupByGene=TRUE,
-                                LegendSize=.8,
+                                legendSize=.8,
                                 plotColors=list(),
                                 titleSize=basicTheme$titleSize,
                                 groupLabSize=basicTheme$groupLabSize,
@@ -460,7 +460,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                 fontFamily=basicTheme$fontFamily,
                                 errorBarCapWidth=basicTheme$errorBarCapWidth,
                                 errorBarLineType=1,
-                                errorCapType=basicTheme$errorCapType,
+                                errorCapType="bar",
                                 subgroupLabelSpacing=basicTheme$subgroupLabelSpacing,
                                 subGroupLabSize=basicTheme$subGroupLabSize,
                                 axisText=c("",""),
@@ -468,7 +468,8 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                 strictLimits=FALSE,
                                 sidePlot=FALSE,
                                 verbose=FALSE,
-                                curvePoints=basicTheme$curvePoints)
+                                curvePoints=basicTheme$curvePoints,
+                                nlevels=8)
 
 
     output$plot1 <- shiny::renderPlot({
@@ -488,7 +489,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                  groupByGene=plotOptions$groupByGene,
                                  main=plotOptions$main,
                                  pointSize=plotOptions$pointSize,
-                                 LegendSize=plotOptions$legendSize,
+                                 legendSize=plotOptions$legendSize,
                                  logScale=plotOptions$logScale,
                                  logAdjustment=plotOptions$logAdjustment,
                                  ylab=plotOptions$ylab,
@@ -531,13 +532,250 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
                                  curvePoints=plotOptions$curvePoints,
                                  sidePlot=plotOptions$sidePlot,
                                  xLim=plotOptions$xLim,
-                                 yLim=plotOptions$yLim)
+                                 yLim=plotOptions$yLim,
+                                 nlevels=plotOptions$nlevels)
+      vcommand<-list(x=dbName)
+      if(!is.null(plotOptions$gene[1])) {
+        if(plotOptions$gene[1]!="") {
+          if(length(plotOptions$gene)==1) {
+            vcommand$gene<-paste0("\"",plotOptions$gene,"\"")
+          } else {
+            vcommand$gene<-paste0("c(",paste0("\"",plotOptions$gene,"\"",collapse = ","),")")
+          }
+        }
+      }
+      if(!is.null(plotOptions$group[1])) {
+        if(plotOptions$group[1]!=FALSE) {
+          if(is.character(plotOptions$group[1]) & length(plotOptions$group)==1) {
+            vcommand$group<-paste0("\"",plotOptions$group,"\"")
+          } else {
+            groupVal<-shiny::renderText( {input$group} )
+            vcommand$group<-groupVal()
+          }
+        }
+      }
+      if(!is.null(plotOptions$subGroup[1])) {
+        if(plotOptions$subGroup[1]!=FALSE) {
+          if(is.character(plotOptions$subGroup[1]) & length(plotOptions$subGroup)==1) {
+            vcommand$subGroup<-paste0("\"",plotOptions$subGroup,"\"")
+          } else {
+            subGroupVal<-shiny::renderText( {input$subGroup} )
+            vcommand$subGroup<-subGroupVal()
+          }
+        }
+      }
+      if(!is.null(plotOptions$highlight[1])) {
+        if(plotOptions$highlight[1]!=FALSE) {
+          if(is.character(plotOptions$highlight[1]) & length(plotOptions$highlight)==1) {
+            vcommand$highlight<-paste0("\"",plotOptions$highlight,"\"")
+          } else {
+            highlightVal<-shiny::renderText( {input$highlight} )
+            vcommand$highlight<-highlightVal()
+          }
+        }
+      }
+      if(!is.null(plotOptions$stack[1])) {
+        if(plotOptions$stack[1]!=FALSE) {
+          if(is.character(plotOptions$stack[1]) & length(plotOptions$stack)==1) {
+            vcommand$stack<-paste0("\"",plotOptions$stack,"\"")
+          } else {
+            stackVal<-shiny::renderText( {input$stack} )
+            vcommand$stack<-stackVal()
+          }
+        }
+      }
+      PS<-"BP"
+      if(plotOptions$plotType != "box") {
+        vcommand$plotType<-paste0("\"",plotOptions$plotType,"\"")
+        if(plotOptions$plotType=="violin") {
+          PS<-"VP"
+        } else if(plotOptions$plotType=="dot") {
+          PS<-"DP"
+        } else if(plotOptions$plotType=="bar") {
+          PS<-"Bar"
+        } else {
+          PS<-"2D"
+        }
+      }
+      if(plotOptions$drawPoints==FALSE){
+        vcommand$drawPoints<-FALSE
+      }
+      if(!is.null(plotOptions$legend) & plotOptions$legend!=FALSE){
+        lt<-'"Legend"'
+        legendTitleVal<-shiny::renderText(shiny::req( {input$legendTitle} ))
+        if(!is.null(legendTitleVal) & legendTitleVal()!=""){
+          lt<-paste0("\"",legendTitleVal(),"\"")
+        }
+        vcommand$legend<-lt
+      }
+      cTheme<-eval(parse(text=plotOptions$theme))
+      if(plotOptions$theme!="basicTheme") {
+        vcommand$theme<-plotOptions$theme
+      }
+      if(plotOptions$pointMethod!=cTheme[[paste0("pointMethod",PS)]]) {
+        vcommand$pointMethod<-paste0("\"",plotOptions$pointMethod,"\"")
+      }
+      if(!is.null(plotOptions$asPercentage) & !is.null(plotOptions$stack)) {
+        if(PS=="Bar" & plotOptions$asPercentage==TRUE & plotOptions$stack!=FALSE) {
+          vcommand$normalize<-TRUE
+        }
+      }
+      if(plotOptions$groupByGene==FALSE) {
+        vcommand$groupByGene<-FALSE
+      }
+      if(!is.null(plotOptions$main)) {
+        if(plotOptions$main!=TRUE & plotOptions$main != ""){
+          vcommand$main<-paste0("\"",plotOptions$main,"\"")
+        }
+      }
+      if(plotOptions$pointSize!=cTheme[[paste0("pointSize",PS)]]) {
+        vcommand$pointSize<-plotOptions$pointSize
+      }
+      if(plotOptions$legendSize!=cTheme$legendSize) {
+        vcommand$legendSize<-plotOptions$legendSize
+      }
+      if(plotOptions$logScale!=FALSE) {
+        vcommand$logScale<-plotOptions$logScale
+      }
+      if(plotOptions$logAdjustment!=1 & plotOptions$logScale!=FALSE) {
+        vcommand$logAdjustment<-plotOptions$logAdjustment
+      }
+      if(!is.null(plotOptions$ylab)) {
+        if(plotOptions$ylab!=""){
+          vcommand$ylab<-paste0("\"",plotOptions$ylab,"\"")
+        }
+      }
+      if(plotOptions$expLabels==TRUE) {
+        vcommand$expLabels<-plotOptions$expLabels
+      }
+      if(plotOptions$rotateY==TRUE) {
+        vcommand$rotateY<-plotOptions$rotateY
+      }
+      if(plotOptions$rotateLabels==TRUE) {
+        vcommand$rotateLabels<-plotOptions$rotateLabels
+      }
+      if(!is.null(plotOptions$groupNames[1])) {
+        if(plotOptions$groupNames[1]!="") {
+          vcommand$groupNames<-plotOptions$groupNames
+        }
+      }
+      if(!is.null(plotOptions$subGroupLabels[1])){
+        if(plotOptions$subGroupLabels[1]!="") {
+          vcommand$subGroupLabels<-plotOptions$subGroupLabels
+        }
+      }
+      if(cTheme$minorTick!=plotOptions$minorTick){
+        vcommand$minorTick<-plotOptions$minorTick
+      }
+      if(cTheme$guides!=plotOptions$guides) {
+        vcommand$guides<-plotOptions$guides
+      }
+      if(!is.null(plotOptions$minorGuides) & !is.null(plotOptions$guides)){
+        if(plotOptions$minorGuides!=plotOptions$guides) {
+          vcommand$minorGuides<-plotOptions$minorGuides
+        }
+      }
+      if(plotOptions$drawRug==TRUE) {
+        vcommand$drawRug<-plotOptions$drawRug
+      }
+      if(PS %in% c("DP","Bar")){
+        if(plotOptions$aggFun!="mean") {
+          vcommand$aggFun<-paste0("\"",plotOptions$aggFun,"\"")
+        }
+        if(plotOptions$errFun!="se") {
+          vcommand$errFun<-paste0("\"",plotOptions$errFun,"\"")
+        }
+        if(plotOptions$errorMultiple != 2) {
+          vcommand$errorMultiple<-plotOptions$errorMultiple
+        }
+        if(!is.null(plotOptions$errorBars)) {
+          if(plotOptions$errorBars != TRUE) {
+            vcommand$errorBars<-plotOptions$errorBars
+          }
+        }
+      }
+      # RSOveride$options<-vcommand
+      if(plotOptions$plotType=="surface") {
+        if(!is.null(plotOptions$theta)) {
+          vcommand$theta<-plotOptions$theta
+        }
+        if(!is.null(plotOptions$phi)) {
+          vcommand$phi<-plotOptions$phi
+        }
+      }
+      if(plotOptions$plotType=="density"){
+        if(!is.null(plotOptions$trimCurves)){
+          vcommand$trimCurves<-plotOptions$trimCurves
+        }
+      }
+      if(PS=="VP"){
+        if(!is.null(plotOptions$trimCurves)){
+          if(plotOptions$trimCurves!=TRUE) {
+            vcommand$trimViolins<-plotOptions$trimCurves
+          }
+        }
+        if(!is.null(plotOptions$vioBoxWidth)) {
+          if(cTheme$vioBoxWidth != plotOptions$vioBoxWidth) {
+            vcommand$vioBoxWidth<-plotOptions$vioBoxWidth
+          }
+        }
+      }
+      if(!is.null(plotOptions$pointShape)) {
+        if(sum(cTheme[[paste0("pointShape",PS)]]==plotOptions$pointShape)!=length(plotOptions$pointShape)) {
+          if(length(plotOptions$pointShape)>1) {
+            vcommand$pointShape<-paste0("c(",paste0(plotOptions$pointShape,sep=","),")")
+          } else {
+            vcommand$pointShape<-plotOptions$pointShape
+          }
+        }
+      }
+      if(!is.null(plotOptions$lWidth)) {
+        if(cTheme[[paste0("lWidth",PS)]]!=plotOptions$lWidth) {
+          vcommand$lWidth<-plotOptions$lWidth
+        }
+      }
+      if(!is.null(plotOptions$width)) {
+        if(cTheme[[paste0("width",PS)]]!=plotOptions$width) {
+          vcommand$width<-plotOptions$width
+        }
+      }
+      if(!is.null(plotOptions$pointLaneWidth)) {
+        if(cTheme[[paste0("pointLaneWidth",PS)]]!=plotOptions$pointLaneWidth) {
+          vcommand$pointLaneWidth<-plotOptions$pointLaneWidth
+        }
+      }
+      if(!is.null(plotOptions$swarmOverflow)) {
+        if(cTheme$swarmOverflow!=plotOptions$swarmOverflow) {
+          vcommand$swarmOverflow<-plotOptions$swarmOverflow
+        }
+      }
+      # plotColors=plotOptions$plotColors,
+
+      # errorCapType=plotOptions$errorCapType,
+      # errorBarLineType=plotOptions$errorBarLineType,
+      # errorBarCapWidth=plotOptions$errorBarCapWidth,
+      # fontFamily=plotOptions$fontFamily,
+      # groupLabelSpacing=plotOptions$groupLabelSpacing,
+      # groupLabSize=plotOptions$groupLabSize,
+      # titleSize=plotOptions$titleSize,
+      # subGroupLabSize=plotOptions$subGroupLabSize,
+      # subgroupLabelSpacing=plotOptions$subgroupLabelSpacing,
+      # axisText=plotOptions$axisText,
+      # extendTicks=plotOptions$extendTick,
+      # verbose=plotOptions$verbose,
+      # curvePoints=plotOptions$curvePoints,
+      # sidePlot=plotOptions$sidePlot,
+      # xLim=plotOptions$xLim,
+      # yLim=plotOptions$yLim,
+      # nlevels=plotOptions$nlevels
+      #RSOveride=RSOveride$rso,
 
       if(RSOveride$rso==TRUE) {
         RSOveride$rso<-FALSE
       }
       output$descriptive<-shiny::renderTable(RSOveride$npData$summary)
-      #utput$Statistics<-RSOveride$npData$stats
+      output$Statistics<-shiny::renderText(RSOveride$npData$stats)
+      output$codeExample<-shiny::renderText(paste0("genePlot(",paste(names(vcommand),vcommand,sep="=",collapse = ", "),")"),quoted = FALSE)
     })
 
     output$colorPlot<-shiny::renderPlot( {
@@ -938,7 +1176,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
     })
 
     shiny::observeEvent(input$xLim, {
-      limVal<-renderText(req( input$xLim ))
+      limVal<-shiny::renderText(shiny::req( input$xLim ))
       xlimVal<-as.numeric(trimws(unlist(strsplit(gsub("[\\(\\)]","",limVal()),split = ","))))
       if(length(xlimVal) < 2 | is.null(limVal()) | limVal()=="" | sum(is.na(xlimVal))>0) {
         plotOptions$xLim<- NULL
@@ -948,7 +1186,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
     })
 
     shiny::observeEvent(input$yLim, {
-      limVal<-renderText(req( input$yLim ))
+      limVal<-shiny::renderText(shiny::req( input$yLim ))
       ylimVal<-as.numeric(trimws(unlist(strsplit(gsub("[\\(\\)]","",limVal()),split = ","))))
       if(length(ylimVal) < 2 | is.null(limVal()) | limVal()=="" | sum(is.na(ylimVal))>0) {
         plotOptions$yLim<- NULL
@@ -971,20 +1209,18 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       cbVal<-shiny::renderText(shiny::req({input$colorBrewer}))
       maxC<-as.numeric(gsub("(.*) \\((\\d+)\\)","\\2",cbVal()))
       pallete<-gsub("(.*) \\((\\d+)\\)","\\1",cbVal())
+      nCT<-shiny::renderText(input$nColors)
       nC<-maxC
       if(!is.null(pallete) & pallete !="" & is.numeric(maxC)) {
-        if(input$nColors <= maxC) {
-          nC<-input$nColors
-          cbVal<-brewer.pal(name=pallete,n=nC)
-        } else {
-          cbVal<-brewer.pal(name=pallete,n=maxC)
+        if(as.numeric(nCT()) <= maxC) {
+          nC<-as.numeric(nCT())
         }
+        cbVal<-brewer.pal(name=pallete,n=nC)
         cbVal<-map_chr(cbVal,setAlpha, alpha=input$alphaSlider)
         shiny::updateTextInput(session,inputId="selectedColors",value=paste0(cbVal,collapse=","))
-        nVect<-rev(seq(3,maxC))
+        nVect<-rev(seq(maxC))
         names(nVect)<-nVect
-
-        shiny::updateSelectInput(session, inputId="nColors", choices=as.list(nVect), selected = max(nVect))
+        shiny::updateSelectInput(session, inputId="nColors", choices=as.list(nVect), selected = nC)
       }
     })
 
@@ -1063,8 +1299,8 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
       plotOptions$pointLaneWidth<-input$pointLaneWidth
     })
 
-    observeEvent(input$errorBarLineType, {
-      cVal<-renderText(input$errorBarLineType)
+    shiny::observeEvent(input$errorBarLineType, {
+      cVal<-shiny::renderText(input$errorBarLineType)
       if(is.null(cVal()) | cVal()=="") {
         plotOptions$errorBarLineType<-NULL
       } else {
@@ -1328,27 +1564,27 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
         plotOptions$LegendBorder<-NULL
       } else {
         cVal<-trimws(unlist(strsplit(cCol(),",")))
-        plotOptions$LegendBorder<- cVal
+        plotOptions$legendBorder<- cVal
       }
     })
 
     shiny::observeEvent(input$LegendLineCol, {
       cCol<-shiny::renderText(input$LegendLineCol)
       if(is.null(cCol()) | cCol()=="") {
-        plotOptions$LegendLineCol<-NULL
+        plotOptions$legendLineCol<-NA
       } else {
         cVal<-trimws(unlist(strsplit(cCol(),",")))
-        plotOptions$LegendLineCol<- cVal
+        plotOptions$legendLineCol<- cVal
       }
     })
 
     shiny::observeEvent(input$LegendBG, {
       cCol<-shiny::renderText(input$LegendBG)
       if(is.null(cCol()) | cCol()=="") {
-        plotOptions$LegendBG<-NULL
+        plotOptions$legendBG<-NA
       } else {
         cVal<-trimws(unlist(strsplit(cCol(),",")))
-        plotOptions$LegendBG<- cVal
+        plotOptions$legendBG<- cVal
       }
     })
 
@@ -1356,6 +1592,10 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
     #Advanced Tab
     shiny::observeEvent(input$useRgl, {
       plotOptions$LegendBG<-input$useRgl
+    })
+
+    shiny::observeEvent(input$nlevels, {
+      plotOptions$nlevels<-input$nlevels
     })
 
     shiny::observeEvent(input$curvePoints, {
@@ -1379,7 +1619,7 @@ shinyGenePlot <- function(data, genes, geneList, factors, factorList, gpOptions)
 
     #Lower Button Panel
     shiny::observeEvent(input$done, {
-      shiny::stopApp(RSOveride$npData)
+      shiny::stopApp(returnValue = RSOveride$npData)
     })
     shiny::observeEvent(input$cancel, {
       shiny::stopApp(NULL)
