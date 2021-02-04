@@ -4,20 +4,27 @@
 \alias{shinyGenePlot}
 \title{Shiny genePlot Widget}
 \usage{
-shinyGenePlot(data, genes, geneList, factorList, gpOptions, dbName = "data")
+shinyGenePlot(
+  data,
+  geneList,
+  factorList,
+  gpOptions,
+  dbName = "data",
+  themeName = "basicTheme"
+)
 }
 \arguments{
 \item{data}{\code{\link[Biobase]{ExpressionSet}} or other R data object containing the data and possibly feature or phenotype information. While intended for use with Bioconductor objects, \code{\link[base]{data.frame}}, \code{\link[base]{matrix}}, and \code{\link[tibble]{tibble}} can also be used.}
-
-\item{genes}{character vector; names of genes already in use}
 
 \item{geneList}{character vector; List of all possible gene names including expression data row names and gene symbols if in use.}
 
 \item{factorList}{all possible factors from phenotype data.}
 
-\item{gpOptions}{active options from the command line. Placeholder.}
+\item{gpOptions}{active options from the command line.}
 
-\item{dbName}{character; Name of the database passed to \code{\link[bvt]{genePlot}}.}
+\item{dbName}{character; Name of the database passed to \code{\link[bvt]{genePlot}}. If using the \code{\link[datasets]{iris}} data set this should be set to "iris".}
+
+\item{themeName}{character; Name of of the selected npTheme as a character string. Used to set the default value in shiny. As \code{\link[base]{eval}} and \code{\link[base]{parse}} are used to access the theme settings any npTheme object in the enviroment will do, including custom themes.}
 }
 \description{
 A shiny widget for bvt's genePlot functions

@@ -25,11 +25,12 @@
 #' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
 #' @param plotType character; Can be set to "box", "violin, "dot", "bar", "density" or "surface" for boxplots, violin plots, dot plots, bar plots, and kernel density plots, respectively.
 #' @param main character; The main plot title. Defaults to true for automated generation.
-#' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
-#' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
+#' @param symbol character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).
+#' @param legend logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
+#' @param theme npTheme object; A valid npTheme object the controls default settings. Defaults to \code{basicTheme}.
 #' @param useNormCounts logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
 #' @param ... Any parameter recognized by \code{NicePlots} functions.
 #'
@@ -72,16 +73,25 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
 
-genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
-
+genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
+  dataOut<-1
   npOptions<-list(...)
+  testenv<-new.env()
+  if(any(grepl("npTheme", class(theme)))) {
+    npOptions$theme<-theme
+  } else {
+    warning("Selected theme is not of class 'npTheme'. See help for more details. Proceeding with defaul settings...",call. = FALSE)
+  }
+  if(!is.null(npOptions$subtitle)) {
+    npOptions$sub<-npOptions$subtitle
+  }
   #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
   if(sum(gene==FALSE)==1 | sum(is.na(gene))==1) {gene<-NULL}
   if((length(group)==1 & sum(group==FALSE)==1) | sum(is.na(group))==length(group)) {group<-NULL}
@@ -116,86 +126,175 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   if(legend==TRUE) {
     legend<-"Legend"
   }
-
+  Tester<-1
   #Collecting the expression and factor data
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
-
-  #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
-  if(is.null(subGroup)){
-    subGroup<-FALSE
-  } else {
-    subGroup<-TRUE
-  }
-  if(is.null(highlight)){
-    highlight<-FALSE
-  } else {
-    highlight<-TRUE
-  }
-  if(is.null(stack)){
-    stack<-FALSE
-  } else {
-    stack<-TRUE
-  }
-  if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
-    subGroup<-TRUE
-  }
-  if(is.null(group) & subGroup==TRUE) {
-    subGroup<-FALSE
-  }
-  if(plotType[1]=="density" & !is.null(group)) {
-    subGroup<-TRUE
-  }
-
-  #Formatting options and adding new data
-  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
-  if(groupByGene==TRUE & data$NullNames==TRUE) {
-    if(is.factor(data$by)) {
-
-      npOptions$subGroupLabels<-rep("",length(levels(data$by)))
-    } else {
-      npOptions$subGroupLabels<-rep("",length(levels(data$by[,1])))
-    }
-  }
-  #Calling NicePlots
-  dataOut<-1
+  assign("PT",plotType, envir = testenv)
   if(shiny[1]==TRUE) {
-    dataOut<-shinyGenePlot(data=x, genes=gene, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factorList=colnames(pData(x)), gpOptions=npOptions, dbName=deparse(substitute(x)))
-    dataOut$options$shiny<-FALSE
-    dataOut$options<-dataOut$options[which(names(dataOut$options)!="RSOverride")]
-    print(dataOut$optiona$gene)
-    plot(dataOut)
-    invisible(dataOut)
-  } else {
-    if(plotType[1]=="box"){
-      dataOut<-do.call("niceBox",npOptions)
-    } else if (plotType[1]=="dot") {
-      dataOut<-do.call("niceDots",npOptions)
-    } else if (plotType[1]=="violin") {
-      dataOut<-do.call("niceVio",npOptions)
-    } else if (plotType[1]=="bar") {
-      dataOut<-do.call("niceBar",npOptions)
-    } else if (plotType[1]=="density") {
-      dataOut<-do.call("niceDensity",npOptions)
-    } else if (plotType[1]=="surface") {
-      pOptions<- append(list(plotType="surface"),npOptions)
-      dataOut<-do.call("niceDensity",npOptions)
+    shinyOpts<-append(list(plotType=plotType,highlight=highlight,groupByGene=groupByGene,group=group, gene=gene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend,symbol=symbol,useNormCounts=useNormCounts),npOptions)
+    if(!is.null(shinyOpts$group)){
+      if(length(shinyOpts$group)>1) {
+        shinyOpts$group<-deparse(substitute(group))
+      }
+    }
+    if(!is.null(shinyOpts$subGroup)){
+      if(length(shinyOpts$subGroup)>1) {
+        shinyOpts$subGroup<-deparse(substitute(subGroup))
+      }
+    }
+    if(!is.null(shinyOpts$highlight)){
+      if(length(shinyOpts$highlight)>1) {
+        shinyOpts$highlight<-deparse(substitute(highlight))
+      }
+    }
+    if(!is.null(shinyOpts$stack)){
+      if(length(shinyOpts$stack)>1) {
+        shinyOpts$stack<-deparse(substitute(stack))
+      }
+    }
+    if(is.null(shinyOpts$logScale)){
+      shinyOpts$logScale<-FALSE
+    }
+    factorList<-colnames(pData(x))
+    if(is.null(shinyOpts$theme)){
+      shinyOpts$theme<-theme
+    }
+    dataOut<-shinyGenePlot(data=x, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factorList=factorList, gpOptions=shinyOpts, dbName=deparse(substitute(x)),themeName=deparse(substitute(theme)))
+    if(Sys.getenv("RSTUDIO") == "1") {
+      return(dataOut$npData)
+    }
+    newOptions<-lapply(dataOut$options, function(o) eval(parse(text=o)))
+    newOptions$x<-x
+    shinyPlotType<-"box"
+    if(is.null(newOptions$plotType)) {
+      shinyPlotType<-"box"
+    } else {
+      shinyPlotType<-newOptions$plotType
+    }
+    data<-getGeneData(x=x, gene=newOptions$gene, plotType=shinyPlotType, symbol=symbol,group=newOptions$group, subGroup=newOptions$subGroup,highlight=newOptions$highlight,facet=newOptions$facet, stack=newOptions$stack, useNormCounts=useNormCounts)
+
+    if(is.null(newOptions$main)==TRUE) {
+      if(length(newOptions$gene)>1) {
+        main<-paste0(c("Gene Expression:",paste0(newOptions$gene,collapse=", ")),collapse=" ")
+      } else {
+        main<-paste0(newOptions$gene, " Expression")
+      }
+    }
+
+    #Setting the legend to turn on automatically
+    if(is.null(newOptions$legend)){
+      legend<-FALSE
+      if(!is.null(newOptions$subGroup) | !is.null(newOptions$stack)| !is.null(newOptions$highlight)) {
+        legend<-"Legend"
+      }
+    }
+    if(legend==TRUE) {
+      legend<-"Legend"
+    }
+    if(is.null(newOptions$groupByGene)) {
+      groupByGene<-TRUE
+    } else {
+      groupByGene<-newOptions$groupByGene
+    }
+    snpOptions<-newOptions[!(names(newOptions) %in% c("x","gene","group","highlight","subGroup","stack","facet","normCounts","plotType","symbol","main","groupByGene"))]
+
+    group<-newOptions$group
+    highlight<-newOptions$highlight
+    subGroup<-newOptions$subGroup
+    stack<-newOptions$stack
+
+    assign("PT",shinyPlotType, envir = testenv)
+    assign("npo",snpOptions,envir = testenv)
+
+    Tester<-2
+  } #else {
+    if(shiny==FALSE) {
+      assign("npo",npOptions,envir = testenv)
+    }
+    #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
+    if(is.null(subGroup)){
+      subGroup<-FALSE
+    } else {
+      subGroup<-TRUE
+    }
+    if(is.null(highlight)){
+      highlight<-FALSE
+    } else {
+      highlight<-TRUE
+    }
+    if(is.null(stack)){
+      stack<-FALSE
+    } else {
+      stack<-TRUE
+    }
+    if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
+      subGroup<-TRUE
+    }
+    if(is.null(group) & subGroup==TRUE) {
+      subGroup<-FALSE
+    }
+    if(plotType[1]=="density" & !is.null(group)) {
+      subGroup<-TRUE
+    }
+
+    #Formatting options and adding new data
+    testenv$npo$main<-main
+    testenv$npo$legend<-legend
+    testenv$npo$flipFacts<-groupByGene
+    testenv$npo$x<-data$x
+    testenv$npo$by<-data$by
+    testenv$npo$subGroup<-subGroup
+    testenv$npo$pointHighlights<-highlight
+    testenv$npo$facet<-FALSE
+    testenv$npo$stack<-stack
+    testenv$npo$na.rm<-na.rm
+    #testenv$npo$RSOveride<-TRUE
+
+    #npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack),npOptions)
+    if(groupByGene==TRUE & data$NullNames==TRUE) {
+      if(is.factor(data$by)) {
+        testenv$npo$subGroupLabels<-rep("",length(levels(data$by)))
+      } else {
+        testenv$npo$subGroupLabels<-rep("",length(levels(data$by[,1])))
+      }
+    }
+
+
+    #Calling NicePlots
+    dataOut<-1
+    if(testenv$PT[1]=="box"){
+      dataOut<-do.call("niceBox",testenv$npo)
+    } else if (testenv$PT[1]=="dot") {
+      dataOut<-do.call("niceDots",testenv$npo)
+    } else if (testenv$PT[1]=="violin") {
+      dataOut<-do.call("niceVio",testenv$npo)
+    } else if (testenv$PT[1]=="bar") {
+      dataOut<-do.call("niceBar",testenv$npo)
+    } else if (testenv$PT[1]=="density") {
+      dataOut<-do.call("niceDensity",testenv$npo)
+    } else if (testenv$PT[1]=="surface") {
+      testenv$npo$plotType<-"surface"
+      dataOut<-do.call("niceDensity",testenv$npo)
     } else {
       stop("invalid plot type")
     }
-    invisible(dataOut)
-  }
-
+#  }
+  invisible(dataOut)
 }
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
+genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
   #the big difference with the npData version of genePlot over the NicePlots equivalents is we are giving users the opportunity to add new factors to the npData object
   #With the generic plot version of npData, x and by are set but different options can be turned on and off
 
   clOptions<-list(...)
+  if(!is.null(clOptions$subtitle)) {
+    clOptions$sub<-clOptions$subtitle
+  }
+
   if(is.null(plotType)) {
     plotType<-x$plotType
   }

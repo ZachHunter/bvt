@@ -8,6 +8,7 @@ genePlot(
   x,
   gene = NULL,
   plotType = c("box", "dot", "bar", "violin", "density", "surface"),
+  theme = basicTheme,
   symbol = "GeneSymbol",
   legend = NULL,
   main = TRUE,
@@ -30,9 +31,11 @@ genePlot(
 
 \item{plotType}{character; Can be set to "box", "violin, "dot", "bar", "density" or "surface" for boxplots, violin plots, dot plots, bar plots, and kernel density plots, respectively.}
 
-\item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).}
+\item{theme}{npTheme object; A valid npTheme object the controls default settings. Defaults to \code{basicTheme}.}
 
-\item{legend}{boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
+\item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).}
+
+\item{legend}{logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
