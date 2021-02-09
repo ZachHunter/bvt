@@ -1,5 +1,5 @@
 #' @title Plot Isoform Expression Data
-#' @description Visualize isoform expression data.
+#' @description Visualize isoform expression data for exploratory data analysis.
 #'
 #' @details
 #' The \code{isoPlot} is designed to make visualization of isoform expression data simple and easy for R novices and bioinformaticians alike.
@@ -19,9 +19,9 @@
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
 #' @param isoforms character; Isoform IDs or a vector of isoform IDS to plot.
 #' @param gene character; Gene or vector of gene names. This is an optional setting that will return all of the isoforms associated with the gene.
-#' @param appris boolean or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).
+#' @param appris logical or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).
 #' @param transcriptType character; Returns only those isoforms where the transcript type column has a substring that matches the character value supplied such as 'protein' in 'protein_coding'. The transcript type column is determined by the \code{ttype} option.
-#' @param asPercentage boolean; If set to \code{\link{TRUE}}, the isoform expression is given as a percetange of total gene expression (defaults to \code{\link{FALSE}})
+#' @param asPercentage logical; If set to \code{\link{TRUE}}, the isoform expression is given as a percentage of total gene expression (defaults to \code{\link{FALSE}})
 #' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
 #' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
 #' @param highlight factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
@@ -29,16 +29,16 @@
 #' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
 #' @param plotType character; Can be set to "box", "violin, "dot", "bar", "denisity" or "surface" for box plots, violin plots, dot plots, bar plots, and kernel density plots, respectively.
 #' @param main character; The main plot title. Defaults to true for automated generation.
-#' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
-#' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
+#' @param symbol character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).
+#' @param legend logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
 #' @param ttype character; Column name of the optional transcript type column in the annotation. The default value is 'transcript_type'.
-#' @param ... Any paramenter recognized by \code{NicePlots} functions.
+#' @param ... Any parameter recognized by \code{NicePlots} functions.
 #'
-#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
 #' ToDo<-1

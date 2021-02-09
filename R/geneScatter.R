@@ -1,5 +1,5 @@
 #' @title Make a Gene Level Scatter Plot
-#' @description Visualize gene expression data.
+#' @description Visualize gene expression data in 1, 2, and 3 dimension scatter/waterfall plots for exploratory data analysis.
 #'
 #' @details
 #' Details will be forthcoming. Makes a 2D or 3D scatter plot.
@@ -10,19 +10,44 @@
 #' @param shape vector/character; Should either be factor of values used to control the shape (i.e. \code{pty}) of points or the name of a gene/phenotype that can be used to construct one.
 #' @param size vector/character; Should either be factor of values used to control the shape (i.e. \code{pty}) of points or the name of a gene/phenotype that can be used to construct one.
 #' @param trendline character; Valid options include \code{color}, \code{shape} or \code{density}.See details for more information. Setting to \code{\link{TRUE}} will cause the first grouping factor to be used.
-#' @param facet factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
+#' @param facet factor or name of factor to be exacted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
 #' @param main character; The main plot title. Defaults to true for automated generation.
-#' @param symbol character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).
-#' @param legend boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
-#' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
+#' @param symbol character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).
+#' @param legend logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
+#' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
-#' @param ... Any paramenter recognized by \code{NicePlots} functions.
+#' @param ... Any parameter recognized by \code{NicePlots} functions.
 #'
-#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
-#' ToDo<-1
+#' #While bioinformatic data sets are the intended use case, bvt functions can be used with as regular
+#' #plotting functions such with data such as iris. As geneScatter is expecting expression data with
+#' #patients as columns and genes as rows, it is necessary to take the transpose of the data set first.
+#'
+#' #basic usage
+#' geneScatter(t(iris[,1:2]), color=iris$Species, shape=iris$Species, size=iris$Petal.Length)
+#'
+#' #using adding a trandline
+#' a<-geneScatter(t(iris[,3:4]), color=iris$Species,  trendline=TRUE, theme=npGGTheme, verbose=TRUE,
+#' corMethod="spearman", pointSize=.8,logScale=10, minorTick=3, minorGuides=TRUE)
+#' #to access the linear model or cor.test statics later:
+#' a$stats
+#'
+#' #multiple trend lines
+#' geneScatter(t(iris[,1:2]), color=iris$Species=="setosa", shape=iris$Species,
+#' trendline="color", theme=npColorTheme)
+#'
+#' #single variable plotting
+#' geneScatter(t(iris[,3]), color=iris$Species)
+#'
+#' #waterfall version of the above. Note type is the same as in base plotting \(i.e. "p","b","h","l"\)
+#' orderedIris<-order(iris[,3], decreasing = TRUE)
+#' geneScatter(t(iris[orderedIris,3]), color=iris$Species[orderedIris], type="h")
+#'
+#' #3D plotting. You can set useRgl=TRUE for rgl based interactive graphics
+#' geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, useRgl=FALSE, size=iris[,4] ,pointSize=1)
 #'
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
@@ -61,7 +86,7 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
       legend<-"Legend"
     }
   }
-  #Collecting the expresion and factor data
+  #Collecting the expression and factor data
   data<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=color, subGroup=shape,highlight=size,facet=facet, stack=NULL, useNormCounts=useNormCounts)
 
   #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
@@ -69,7 +94,15 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
     color<-data$by$group
   }
   if(!is.null(shape)){
-    shape<-data$by$subGroup
+    #This is an issue because we are being lazy and repurposing getGeneData for use here.
+    #The subGroup variable is discarded if more than one gene is used as this effectively eats of one of the two possible grouping factors.
+    #If this is the case then shape may be left as NULL. If this happens we just run it again as the grouping variable.
+    if(is.null(data$by$subGroup)) {
+      data2<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=shape,subGroup=size, highlight=color,facet=facet, stack=NULL, useNormCounts=useNormCounts)
+      shape<-data2$by$group
+    } else {
+      shape<-data$by$subGroup
+    }
   }
   if(!is.null(size)){
     size<-data$by$highlight

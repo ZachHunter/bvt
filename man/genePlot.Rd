@@ -25,7 +25,7 @@ genePlot(
 )
 }
 \arguments{
-\item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.}
+\item{x}{R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well.}
 
 \item{gene}{character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.}
 
@@ -63,20 +63,20 @@ genePlot(
 an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
-Visualize gene expression data for Nick.
+Visualize gene expression data for exploratory data analysis
 }
 \details{
-The \code{genePlot} is designed to make vissualizatin of gene expression data simple and easy for R novices and bioinformaticians alike.
-The function is an S3 generic that accept various R and Bioconductor datasets as input and exracts the expression, factor and annotation data from them according to type.
-The factors allow for spliting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
+The \code{genePlot} is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
+The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to type.
+The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
 If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 If no matches are found the row names of are checked of the expression data are check for matches as well.
-If charactar values are given for factor input, \code{genePlot} will attempt to look up assocated phenotype data (e.g. \code{\link[Biobase]{pData}}).
+If character values are given for factor input, \code{genePlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
-The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
+The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-\code{genePlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+\code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
 Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. Oh and hey Nick, this ones for you!
 }

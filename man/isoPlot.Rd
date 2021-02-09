@@ -37,11 +37,11 @@ isoPlot(
 
 \item{plotType}{character; Can be set to "box", "violin, "dot", "bar", "denisity" or "surface" for box plots, violin plots, dot plots, bar plots, and kernel density plots, respectively.}
 
-\item{asPercentage}{boolean; If set to \code{\link{TRUE}}, the isoform expression is given as a percetange of total gene expression (defaults to \code{\link{FALSE}})}
+\item{asPercentage}{logical; If set to \code{\link{TRUE}}, the isoform expression is given as a percentage of total gene expression (defaults to \code{\link{FALSE}})}
 
-\item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).}
+\item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).}
 
-\item{legend}{boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
+\item{legend}{logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
@@ -63,19 +63,19 @@ isoPlot(
 
 \item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
 
-\item{appris}{boolean or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).}
+\item{appris}{logical or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).}
 
 \item{transcriptType}{character; Returns only those isoforms where the transcript type column has a substring that matches the character value supplied such as 'protein' in 'protein_coding'. The transcript type column is determined by the \code{ttype} option.}
 
 \item{ttype}{character; Column name of the optional transcript type column in the annotation. The default value is 'transcript_type'.}
 
-\item{...}{Any paramenter recognized by \code{NicePlots} functions.}
+\item{...}{Any parameter recognized by \code{NicePlots} functions.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
-Visualize isoform expression data.
+Visualize isoform expression data for exploratory data analysis.
 }
 \details{
 The \code{isoPlot} is designed to make visualization of isoform expression data simple and easy for R novices and bioinformaticians alike.

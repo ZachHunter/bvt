@@ -95,12 +95,15 @@
 
 
 #' @title Shiny genePlot Widget
-#' @description A shiny widget for bvt's genePlot functions
+#' @description A shiny widget for bvt's genePlot
 #'
 #' @details
 #' This is a the optional gui interface for using genePlot. It is an internal function that is not exported
-#' The interface returns the options selected by the user.
-#'data, genes, geneList, factors, factorList, theme, gpOptions
+#' The interface returns the options selected by the user. The GUI allows for extensive customization and returns
+#' the effective plotting command and npData object for plotting. This is due to the way that RStudio handles graphics a
+#' and seems to have issues with immediately ploting the data. For this reason the data is plotted in base R
+#' but only the npData object is returned in RStudio. This can to plotted using plot or genePlot or any nicePlots function.
+#'
 #' @param data \code{\link[Biobase]{ExpressionSet}} or other R data object containing the data and possibly feature or phenotype information. While intended for use with Bioconductor objects, \code{\link[base]{data.frame}}, \code{\link[base]{matrix}}, and \code{\link[tibble]{tibble}} can also be used.
 #' @param geneList character vector; List of all possible gene names including expression data row names and gene symbols if in use.
 #' @param factorList all possible factors from phenotype data.
@@ -142,6 +145,11 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       IPT<-"2D"
     }
   }
+  #The above code is reading the plot type and theme information so we can access the right theme settings
+  #for determining defaults. This is a very long function with a lot of UI element so a quick guide to the
+  #code is probably in order. This section defines the UI elements using miniUI::miniContentPanel,
+  #The elements below the plot preview window are broken into tabs (ie miniTabstripPanel) and are listed
+  #more or less in order of the tabs from left to right and from the top of the tab page to the bottom.
   factorList<-append(list("None"=FALSE),as.list(factorList))
   themes<-npThemes()
   ui <- miniUI::miniPage(
@@ -149,6 +157,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
      shiny::plotOutput("plot1", height = "100%")
     ),
     miniUI::miniTabstripPanel(
+      ############## Begin Data Tab Section ####################3
       miniUI::miniTabPanel("Select Data", icon = shiny::icon("database"),
         miniUI::miniContentPanel(padding = 2,
           shiny::fillRow(height = "80px",flex=c(3,4,1,4,1),
@@ -196,6 +205,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           )
         )
       ),
+      ############### Begin Plot Options Tab Section ###########################
       miniUI::miniTabPanel("Plot Options", icon = shiny::icon("chart-area"),
         miniUI::miniContentPanel(padding = 5,
           shiny::fillCol(height = "85%",
@@ -287,6 +297,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           )
         )
       ),
+      ################## Begin Format Tab Section ########################################
       miniUI::miniTabPanel("Format", icon = shiny::icon("sliders"),
         miniUI::miniContentPanel(padding = 5,
           shiny::fillCol(
@@ -428,6 +439,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           )
         )
       ),
+      ################ Begin Advanced Tab Section ##################################
       miniUI::miniTabPanel("Advanced", icon = shiny::icon("code"),
         miniUI::miniContentPanel(padding = 5,
           shiny::h4("Misc Options"),
@@ -479,6 +491,22 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     )
   )
 
+
+  #This is the beginning or the server sections where the reactive values and element response code resides
+  #RSOveride is a element that stores the npData output from the plot preview and the command line code
+  #needed to generate the plot. The plotOptions reactive value is a list of all current settings and is the variable
+  #UI elements update based on user input. The plotOptions settings are then passed to genePlot to create the
+  #plot preview and the output is stored in RSOveride as previously mentioned.
+  #
+  #The following sections examines each UI element to update the vcommond list variable. Unlike plot options which
+  #stores all current settings, this tries to contain only minimal set of options to generate the current code.
+  #This is used to generate the code equivalent example in the advanced tab and is stored in RSOveride to be returned
+  #to genePlot for use in non-RStudio environments (graphic output weirdness RStudio prevents direct plotting from the shiny app for some reason.)
+  #The final section is all of the UI observation code to respond to the user and update plotOptions. The gpOptions
+  #variable is used to remember the initial settings for initial defaults and also options reset.
+  #The observation code does try to update all options set to default in the plot type or theme changes.
+  #Elements not set to default values are left alone. Note some settings don't exsist for some plot types
+  #such as point options for bar plots. In these cases box plot options are used as an alternative default.
   server <- function(input, output, session) {
     aGenes<-shiny::reactiveValues(g=gpOptions$gene)
     cTheme<-"basicTheme"
@@ -621,6 +649,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  symbol=plotOptions$symbol,
                                  useNormCounts=plotOptions$useNormCounts)
 
+      #######Begin section constructing minimal options needed using vcommand ############
       vcommand<-list(x=dbName)
       if(!is.null(plotOptions$gene[1])) {
         if(plotOptions$gene[1]!="") {
@@ -1041,6 +1070,10 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
         vcommand$useNormCounts<-FALSE
       }
       RSOveride$options<-vcommand
+
+      #This needs to change after the first pass. RSOveride set to TRUE nukes the graphics environment.
+      #if RStudio is being used to prevent ghost like over ploting issues caused by it refusing update
+      #Within the shiny widget it needs to be run on the first pass only.
       if(RSOveride$rso==TRUE) {
         RSOveride$rso<-FALSE
       }
@@ -1049,6 +1082,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       output$codeExample<-shiny::renderText(paste0("genePlot(",paste(names(vcommand),vcommand,sep="=",collapse = ", "),")"),quoted = FALSE)
     })
 
+      #Code for the color plot preview in the format tab
     output$colorPlot<-shiny::renderPlot( {
       opar<-par(mar=c(0,0,0,0))
       plot(1,1,type="n", xlim=c(0,100), ylim=c(0,10),axes = FALSE, ylab="", xlab="")
@@ -1065,8 +1099,9 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       par(opar)
     })
 
+    ################ Begin the UI Observation Section ##############################
 
-    ######Data Minitab
+    #################### Data Minitab ########################
     shiny::observeEvent(input$gene, {
       geneChoices<-NULL
       cSymbol<-shiny::renderText({ input$gene })
@@ -1589,7 +1624,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       plotOptions$drawBox<-input$drawBox
     })
 
-    #####Format Minitab
+    ################# Format Minitab #################################
     shiny::observeEvent(input$theme, {
       cTheme<-shiny::renderText(shiny::req({input$theme}))
       oTheme<-get(plotOptions$theme)
@@ -2085,7 +2120,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     })
 
 
-    #Advanced Tab
+    ########### Advanced Tab ######################3
     shiny::observeEvent(input$useRgl, {
       plotOptions$useRgl<-input$useRgl
     })
@@ -2131,7 +2166,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     #Lower Button Panel
     shiny::observeEvent(input$done, {
       vcomList<-shiny::reactiveValuesToList(RSOveride)
-      vcomList$options<-vcomList$options[[names(vcomList$options)!="RSOveride"]]
+      vcomList$options<-vcomList$options[names(vcomList$options)!="RSOveride"]
       #vcomList<-vcomList$options
       shiny::stopApp(returnValue = vcomList)
     })

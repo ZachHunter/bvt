@@ -19,11 +19,11 @@ getGeneData(
 )
 }
 \arguments{
-\item{x}{R data object; Most typically this is an \code{\link[Biobase]{ExpressionSet}}, but there is support for other datatypes as well.}
+\item{x}{R data object; Most typically this is an \code{\link[Biobase]{ExpressionSet}}, but there is support for other data types as well.}
 
-\item{gene}{Gene name, rowname of an expression table actualy vector/matrix of expression. In the case of gene names, the feature annotation element indicated by \code{symbol} is search for matches prior to checking the rownames of the expression table (e.g. \code{\link[Biobase]{assayData}}).}
+\item{gene}{Gene name, row name of an expression table actualy vector/matrix of expression. In the case of gene names, the feature annotation element indicated by \code{symbol} is search for matches prior to checking the row names of the expression table (e.g. \code{\link[Biobase]{assayData}}).}
 
-\item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
+\item{plotType}{character; Can be set to "box", "violin, "dot", "bar" or "density" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.}
 
 \item{group}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.}
 
@@ -35,11 +35,11 @@ getGeneData(
 
 \item{stack}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.}
 
-\item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (e.g. \code{\link[Biobase]{fData}}).}
+\item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (e.g. \code{\link[Biobase]{fData}}).}
 
 \item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
 
-\item{...}{Any paramenter recognized by \code{NicePlots} functions.}
+\item{...}{Any parameter recognized by \code{NicePlots} functions.}
 }
 \description{
 Returns selected gene expression and factor data based on data type.

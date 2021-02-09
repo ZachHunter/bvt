@@ -34,33 +34,58 @@ geneScatter(
 
 \item{trendline}{character; Valid options include \code{color}, \code{shape} or \code{density}.See details for more information. Setting to \code{\link{TRUE}} will cause the first grouping factor to be used.}
 
-\item{symbol}{character; Colname of of gene symbols in the feature data of \code{x} (\code{fData}).}
+\item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).}
 
-\item{legend}{boolean or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
+\item{legend}{loagical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
 \item{na.rm}{logical; Removes \code{\link{NA}} values prior to ploting.}
 
-\item{facet}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
+\item{facet}{factor or name of factor to be exacted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
 
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
 \item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
 
-\item{...}{Any paramenter recognized by \code{NicePlots} functions.}
+\item{...}{Any parameter recognized by \code{NicePlots} functions.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistcs.
+an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
-Visualize gene expression data.
+Visualize gene expression data in 1, 2, and 3 dimension scatter/waterfall plots for exploratory data analysis.
 }
 \details{
 Details will be forthcoming. Makes a 2D or 3D scatter plot.
 }
 \examples{
-ToDo<-1
+#While bioinformatic data sets are the intended use case, bvt functions can be used with as regular
+#plotting functions such with data such as iris. As geneScatter is expecting expression data with
+#patients as columns and genes as rows, it is necessary to take the transpose of the data set first.
+
+#basic usage
+geneScatter(t(iris[,1:2]), color=iris$Species, shape=iris$Species, size=iris$Petal.Length)
+
+#using adding a trandline
+a<-geneScatter(t(iris[,3:4]), color=iris$Species,  trendline=TRUE, theme=npGGTheme, verbose=TRUE,
+corMethod="spearman", pointSize=.8,logScale=10, minorTick=3, minorGuides=TRUE)
+#to access the linear model or cor.test statics later:
+a$stats
+
+#multiple trend lines
+geneScatter(t(iris[,1:2]), color=iris$Species=="setosa", shape=iris$Species,
+trendline="color", theme=npColorTheme)
+
+#single variable plotting
+geneScatter(t(iris[,3]), color=iris$Species)
+
+#waterfall version of the above. Note type is the same as in base plotting \(i.e. "p","b","h","l"\)
+orderedIris<-order(iris[,3], decreasing = TRUE)
+geneScatter(t(iris[orderedIris,3]), color=iris$Species[orderedIris], type="h")
+
+#3D plotting. You can set useRgl=TRUE for rgl based interactive graphics
+geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, useRgl=FALSE, size=iris[,4] ,pointSize=1)
 
 }
 \seealso{

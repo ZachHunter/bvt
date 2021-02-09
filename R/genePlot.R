@@ -1,22 +1,22 @@
 #' @title Plot Gene Expression Data
-#' @description Visualize gene expression data for Nick.
+#' @description Visualize gene expression data for exploratory data analysis
 #'
 #' @details
-#' The \code{genePlot} is designed to make vissualizatin of gene expression data simple and easy for R novices and bioinformaticians alike.
-#' The function is an S3 generic that accept various R and Bioconductor datasets as input and exracts the expression, factor and annotation data from them according to type.
-#' The factors allow for spliting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
+#' The \code{genePlot} is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
+#' The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to type.
+#' The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
 #' If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 #' If no matches are found the row names of are checked of the expression data are check for matches as well.
-#' If charactar values are given for factor input, \code{genePlot} will attempt to look up assocated phenotype data (e.g. \code{\link[Biobase]{pData}}).
+#' If character values are given for factor input, \code{genePlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
-#' The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
+#' The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 #' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-#' \code{genePlot} silently returns a list of class \code{npData} that conatains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+#' \code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 #' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
 #' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. Oh and hey Nick, this ones for you!
 #'
-#' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
+#' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
 #' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
 #' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
@@ -127,9 +127,13 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     legend<-"Legend"
   }
   Tester<-1
-  #Collecting the expression and factor data
+  #Collecting the expression and factor data based on data type
   data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  #Note this use of an alternative environment is due to some weird issues seen in RStudio with plotType take on strange values.
+  #Unclear if this helped but left in place for now.
   assign("PT",plotType, envir = testenv)
+
+  #Begin shiny GUI pre processing
   if(shiny[1]==TRUE) {
     shinyOpts<-append(list(plotType=plotType,highlight=highlight,groupByGene=groupByGene,group=group, gene=gene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend,symbol=symbol,useNormCounts=useNormCounts),npOptions)
     if(!is.null(shinyOpts$group)){
@@ -159,10 +163,14 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     if(is.null(shinyOpts$theme)){
       shinyOpts$theme<-theme
     }
+    #Run Shiny Widget
     dataOut<-shinyGenePlot(data=x, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factorList=factorList, gpOptions=shinyOpts, dbName=deparse(substitute(x)),themeName=deparse(substitute(theme)))
+    #If RStudio is being used just return the npData object as ploting seems to cause issues.
     if(Sys.getenv("RSTUDIO") == "1") {
       return(dataOut$npData)
     }
+    #If not using RStudio, the options (vcommand from the shiny widget) is used to reprocesses the data
+    #and then continues with the previously scheduled program.
     newOptions<-lapply(dataOut$options, function(o) eval(parse(text=o)))
     newOptions$x<-x
     shinyPlotType<-"box"
@@ -205,80 +213,74 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
 
     assign("PT",shinyPlotType, envir = testenv)
     assign("npo",snpOptions,envir = testenv)
+  }
+  if(shiny==FALSE) {
+    assign("npo",npOptions,envir = testenv)
+  }
+  #Now we convert the options to logical TRUE/FALSE for compatibility with NicePlots
+  if(is.null(subGroup)){
+    subGroup<-FALSE
+  } else {
+    subGroup<-TRUE
+  }
+  if(is.null(highlight)){
+    highlight<-FALSE
+  } else {
+    highlight<-TRUE
+  }
+  if(is.null(stack)){
+    stack<-FALSE
+  } else {
+    stack<-TRUE
+  }
+  if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
+    subGroup<-TRUE
+  }
+  if(is.null(group) & subGroup==TRUE) {
+    subGroup<-FALSE
+  }
+  if(plotType[1]=="density" & !is.null(group)) {
+    subGroup<-TRUE
+  }
 
-    Tester<-2
-  } #else {
-    if(shiny==FALSE) {
-      assign("npo",npOptions,envir = testenv)
-    }
-    #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
-    if(is.null(subGroup)){
-      subGroup<-FALSE
+  #Formatting options and adding new data
+  testenv$npo$main<-main
+  testenv$npo$legend<-legend
+  testenv$npo$flipFacts<-groupByGene
+  testenv$npo$x<-data$x
+  testenv$npo$by<-data$by
+  testenv$npo$subGroup<-subGroup
+  testenv$npo$pointHighlights<-highlight
+  testenv$npo$facet<-FALSE
+  testenv$npo$stack<-stack
+  testenv$npo$na.rm<-na.rm
+
+  if(groupByGene==TRUE & data$NullNames==TRUE) {
+    if(is.factor(data$by)) {
+      testenv$npo$subGroupLabels<-rep("",length(levels(data$by)))
     } else {
-      subGroup<-TRUE
+      testenv$npo$subGroupLabels<-rep("",length(levels(data$by[,1])))
     }
-    if(is.null(highlight)){
-      highlight<-FALSE
-    } else {
-      highlight<-TRUE
-    }
-    if(is.null(stack)){
-      stack<-FALSE
-    } else {
-      stack<-TRUE
-    }
-    if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
-      subGroup<-TRUE
-    }
-    if(is.null(group) & subGroup==TRUE) {
-      subGroup<-FALSE
-    }
-    if(plotType[1]=="density" & !is.null(group)) {
-      subGroup<-TRUE
-    }
+  }
 
-    #Formatting options and adding new data
-    testenv$npo$main<-main
-    testenv$npo$legend<-legend
-    testenv$npo$flipFacts<-groupByGene
-    testenv$npo$x<-data$x
-    testenv$npo$by<-data$by
-    testenv$npo$subGroup<-subGroup
-    testenv$npo$pointHighlights<-highlight
-    testenv$npo$facet<-FALSE
-    testenv$npo$stack<-stack
-    testenv$npo$na.rm<-na.rm
-    #testenv$npo$RSOveride<-TRUE
-
-    #npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack),npOptions)
-    if(groupByGene==TRUE & data$NullNames==TRUE) {
-      if(is.factor(data$by)) {
-        testenv$npo$subGroupLabels<-rep("",length(levels(data$by)))
-      } else {
-        testenv$npo$subGroupLabels<-rep("",length(levels(data$by[,1])))
-      }
-    }
-
-
-    #Calling NicePlots
-    dataOut<-1
-    if(testenv$PT[1]=="box"){
-      dataOut<-do.call("niceBox",testenv$npo)
-    } else if (testenv$PT[1]=="dot") {
-      dataOut<-do.call("niceDots",testenv$npo)
-    } else if (testenv$PT[1]=="violin") {
-      dataOut<-do.call("niceVio",testenv$npo)
-    } else if (testenv$PT[1]=="bar") {
-      dataOut<-do.call("niceBar",testenv$npo)
-    } else if (testenv$PT[1]=="density") {
-      dataOut<-do.call("niceDensity",testenv$npo)
-    } else if (testenv$PT[1]=="surface") {
-      testenv$npo$plotType<-"surface"
-      dataOut<-do.call("niceDensity",testenv$npo)
-    } else {
-      stop("invalid plot type")
-    }
-#  }
+  #Calling NicePlots
+  dataOut<-1
+  if(testenv$PT[1]=="box"){
+    dataOut<-do.call("niceBox",testenv$npo)
+  } else if (testenv$PT[1]=="dot") {
+    dataOut<-do.call("niceDots",testenv$npo)
+  } else if (testenv$PT[1]=="violin") {
+    dataOut<-do.call("niceVio",testenv$npo)
+  } else if (testenv$PT[1]=="bar") {
+    dataOut<-do.call("niceBar",testenv$npo)
+  } else if (testenv$PT[1]=="density") {
+    dataOut<-do.call("niceDensity",testenv$npo)
+  } else if (testenv$PT[1]=="surface") {
+    testenv$npo$plotType<-"surface"
+    dataOut<-do.call("niceDensity",testenv$npo)
+  } else {
+    stop("invalid plot type")
+  }
   invisible(dataOut)
 }
 

@@ -27,12 +27,14 @@ shinyGenePlot(
 \item{themeName}{character; Name of of the selected npTheme as a character string. Used to set the default value in shiny. As \code{\link[base]{eval}} and \code{\link[base]{parse}} are used to access the theme settings any npTheme object in the enviroment will do, including custom themes.}
 }
 \description{
-A shiny widget for bvt's genePlot functions
+A shiny widget for bvt's genePlot
 }
 \details{
 This is a the optional gui interface for using genePlot. It is an internal function that is not exported
-The interface returns the options selected by the user.
-data, genes, geneList, factors, factorList, theme, gpOptions
+The interface returns the options selected by the user. The GUI allows for extensive customization and returns
+the effective plotting command and npData object for plotting. This is due to the way that RStudio handles graphics a
+and seems to have issues with immediately ploting the data. For this reason the data is plotted in base R
+but only the npData object is returned in RStudio. This can to plotted using plot or genePlot or any nicePlots function.
 }
 \examples{
 ToDo<-1
