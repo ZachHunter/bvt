@@ -36,11 +36,11 @@ geneScatter(
 
 \item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).}
 
-\item{legend}{loagical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
+\item{legend}{logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.}
 
 \item{main}{character; The main plot title. Defaults to true for automated generation.}
 
-\item{na.rm}{logical; Removes \code{\link{NA}} values prior to ploting.}
+\item{na.rm}{logical; Removes \code{\link{NA}} values prior to plotting.}
 
 \item{facet}{factor or name of factor to be exacted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.}
 
@@ -85,7 +85,7 @@ orderedIris<-order(iris[,3], decreasing = TRUE)
 geneScatter(t(iris[orderedIris,3]), color=iris$Species[orderedIris], type="h")
 
 #3D plotting. You can set useRgl=TRUE for rgl based interactive graphics
-geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, useRgl=FALSE, size=iris[,4] ,pointSize=1)
+geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, size=iris[,4] ,pointSize=1)
 
 }
 \seealso{

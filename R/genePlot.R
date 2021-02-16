@@ -19,7 +19,7 @@
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
 #' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
-#' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
+#' @param subgroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subgroup} is ignored.
 #' @param highlight factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
 #' @param facet factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
 #' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
@@ -73,14 +73,14 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
 
-genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
+genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
   dataOut<-1
   npOptions<-list(...)
   testenv<-new.env()
@@ -95,7 +95,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
   if(sum(gene==FALSE)==1 | sum(is.na(gene))==1) {gene<-NULL}
   if((length(group)==1 & sum(group==FALSE)==1) | sum(is.na(group))==length(group)) {group<-NULL}
-  if((length(subGroup)==1 & sum(subGroup==FALSE)==1) | sum(is.na(subGroup))==length(subGroup)) {subGroup<-NULL}
+  if((length(subgroup)==1 & sum(subgroup==FALSE)==1) | sum(is.na(subgroup))==length(subgroup)) {subgroup<-NULL}
   if((length(stack)==1 & sum(stack==FALSE)==1) | sum(is.na(stack))==length(stack)) {stack<-NULL}
   if((length(highlight)==1 & sum(highlight==FALSE)==1) | sum(is.na(highlight))==length(highlight)) {highlight<-NULL}
 
@@ -119,7 +119,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   #Setting the legend to turn on automatically
   if(is.null(legend)){
     legend<-FALSE
-    if(!is.null(subGroup) | !is.null(stack)| !is.null(highlight)) {
+    if(!is.null(subgroup) | !is.null(stack)| !is.null(highlight)) {
       legend<-"Legend"
     }
   }
@@ -128,22 +128,21 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   }
   Tester<-1
   #Collecting the expression and factor data based on data type
-  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
   #Note this use of an alternative environment is due to some weird issues seen in RStudio with plotType take on strange values.
   #Unclear if this helped but left in place for now.
   assign("PT",plotType, envir = testenv)
-
   #Begin shiny GUI pre processing
   if(shiny[1]==TRUE) {
-    shinyOpts<-append(list(plotType=plotType,highlight=highlight,groupByGene=groupByGene,group=group, gene=gene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend,symbol=symbol,useNormCounts=useNormCounts),npOptions)
+    shinyOpts<-append(list(plotType=plotType,highlight=highlight,groupByGene=groupByGene,group=group, gene=gene, subgroup=subgroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend,symbol=symbol,useNormCounts=useNormCounts),npOptions)
     if(!is.null(shinyOpts$group)){
       if(length(shinyOpts$group)>1) {
         shinyOpts$group<-deparse(substitute(group))
       }
     }
-    if(!is.null(shinyOpts$subGroup)){
-      if(length(shinyOpts$subGroup)>1) {
-        shinyOpts$subGroup<-deparse(substitute(subGroup))
+    if(!is.null(shinyOpts$subgroup)){
+      if(length(shinyOpts$subgroup)>1) {
+        shinyOpts$subgroup<-deparse(substitute(subgroup))
       }
     }
     if(!is.null(shinyOpts$highlight)){
@@ -159,13 +158,13 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     if(is.null(shinyOpts$logScale)){
       shinyOpts$logScale<-FALSE
     }
-    factorList<-colnames(pData(x))
     if(is.null(shinyOpts$theme)){
       shinyOpts$theme<-theme
     }
     #Run Shiny Widget
-    dataOut<-shinyGenePlot(data=x, geneList=c(as.character(fData(x)$GeneSymbol),as.character(rownames(exprs(x)))), factorList=factorList, gpOptions=shinyOpts, dbName=deparse(substitute(x)),themeName=deparse(substitute(theme)))
+    dataOut<-shinyGenePlot(data=x, geneList=data$geneList, factorList=data$factorList, gpOptions=shinyOpts, dbName=deparse(substitute(x)),themeName=deparse(substitute(theme)))
     #If RStudio is being used just return the npData object as ploting seems to cause issues.
+    dataOut$options<-dataOut$options[names(dataOut$options)!="RSOveride"]
     if(Sys.getenv("RSTUDIO") == "1") {
       return(dataOut$npData)
     }
@@ -179,7 +178,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     } else {
       shinyPlotType<-newOptions$plotType
     }
-    data<-getGeneData(x=x, gene=newOptions$gene, plotType=shinyPlotType, symbol=symbol,group=newOptions$group, subGroup=newOptions$subGroup,highlight=newOptions$highlight,facet=newOptions$facet, stack=newOptions$stack, useNormCounts=useNormCounts)
+    data<-getGeneData(x=x, gene=newOptions$gene, plotType=shinyPlotType, symbol=symbol,group=newOptions$group, subgroup=newOptions$subgroup,highlight=newOptions$highlight,facet=newOptions$facet, stack=newOptions$stack, useNormCounts=useNormCounts)
 
     if(is.null(newOptions$main)==TRUE) {
       if(length(newOptions$gene)>1) {
@@ -192,7 +191,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     #Setting the legend to turn on automatically
     if(is.null(newOptions$legend)){
       legend<-FALSE
-      if(!is.null(newOptions$subGroup) | !is.null(newOptions$stack)| !is.null(newOptions$highlight)) {
+      if(!is.null(newOptions$subgroup) | !is.null(newOptions$stack)| !is.null(newOptions$highlight)) {
         legend<-"Legend"
       }
     }
@@ -204,11 +203,11 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     } else {
       groupByGene<-newOptions$groupByGene
     }
-    snpOptions<-newOptions[!(names(newOptions) %in% c("x","gene","group","highlight","subGroup","stack","facet","normCounts","plotType","symbol","main","groupByGene"))]
+    snpOptions<-newOptions[!(names(newOptions) %in% c("x","gene","group","highlight","subgroup","stack","facet","normCounts","plotType","symbol","main","groupByGene"))]
 
     group<-newOptions$group
     highlight<-newOptions$highlight
-    subGroup<-newOptions$subGroup
+    subgroup<-newOptions$subgroup
     stack<-newOptions$stack
 
     assign("PT",shinyPlotType, envir = testenv)
@@ -218,10 +217,10 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     assign("npo",npOptions,envir = testenv)
   }
   #Now we convert the options to logical TRUE/FALSE for compatibility with NicePlots
-  if(is.null(subGroup)){
-    subGroup<-FALSE
+  if(is.null(subgroup)){
+    subgroup<-FALSE
   } else {
-    subGroup<-TRUE
+    subgroup<-TRUE
   }
   if(is.null(highlight)){
     highlight<-FALSE
@@ -233,14 +232,14 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   } else {
     stack<-TRUE
   }
-  if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
-    subGroup<-TRUE
+  if(!is.vector(data$x) & (!is.null(group) | !is.null(subgroup))) {
+    subgroup<-TRUE
   }
-  if(is.null(group) & subGroup==TRUE) {
-    subGroup<-FALSE
+  if(is.null(group) & subgroup==TRUE) {
+    subgroup<-FALSE
   }
   if(plotType[1]=="density" & !is.null(group)) {
-    subGroup<-TRUE
+    subgroup<-TRUE
   }
 
   #Formatting options and adding new data
@@ -249,7 +248,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   testenv$npo$flipFacts<-groupByGene
   testenv$npo$x<-data$x
   testenv$npo$by<-data$by
-  testenv$npo$subGroup<-subGroup
+  testenv$npo$subgroup<-subgroup
   testenv$npo$pointHighlights<-highlight
   testenv$npo$facet<-FALSE
   testenv$npo$stack<-stack
@@ -257,9 +256,9 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
 
   if(groupByGene==TRUE & data$NullNames==TRUE) {
     if(is.factor(data$by)) {
-      testenv$npo$subGroupLabels<-rep("",length(levels(data$by)))
+      testenv$npo$subgroupLabels<-rep("",length(levels(data$by)))
     } else {
-      testenv$npo$subGroupLabels<-rep("",length(levels(data$by[,1])))
+      testenv$npo$subgroupLabels<-rep("",length(levels(data$by[,1])))
     }
   }
 
@@ -300,17 +299,17 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
   if(is.null(plotType)) {
     plotType<-x$plotType
   }
-  if(sum(c("group","stack","highlight","subGroup") %in% names(clOptions),na.rm=T)>0){
+  if(sum(c("group","stack","highlight","subgroup") %in% names(clOptions),na.rm=T)>0){
     #check for new group data
     if("group" %in% names(clOptions)) {
       if(is.vector(x$options$by)) {
         if(length(clOptions[["group"]]) == length(x$options$by)) {
-          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subGroup[1],na.rm=TRUE)==0) {
+          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subgroup[1],na.rm=TRUE)==0) {
             x$options$by<-clOptions[["group"]]
           } else {
             x$options$by<-data.frame(group=clOptions[["group"]],temp=x$options$by)
-            if(x$options$subGroup[1]==TRUE) {
-              colnames(x$options$by)[2]<- "subGroup"
+            if(x$options$subgroup[1]==TRUE) {
+              colnames(x$options$by)[2]<- "subgroup"
             } else if (x$options$pointHighlights==TRUE){
               colnames(x$options$by)[2]<- "highlight"
             } else if (x$options$stack==TRUE){
@@ -323,7 +322,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
         #Now handle the case that by is a data.frame for group
       } else {
         if(length(clOptions[["group"]]) == dim(x$options$by)[1]) {
-          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subGroup[1],na.rm=TRUE) < dim(x$options$by)[2]) {
+          if(sum(x$options$stack[1],x$options$pointHighlights[1],x$options$subgroup[1],na.rm=TRUE) < dim(x$options$by)[2]) {
             x$options$by[,1] <-clOptions[["group"]]
             colnames(x$options$by)[1]<-"group"
           } else {
@@ -335,115 +334,115 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
       }
     }
 
-    #Check for new subGroup data
-    if ("subGroup" %in% names(clOptions)) {
+    #Check for new subgroup data
+    if ("subgroup" %in% names(clOptions)) {
       if (is.vector(x$options$by)) {
-        if (length(clOptions[["subGroup"]]) == length(x$options$by)) {
+        if (length(clOptions[["subgroup"]]) == length(x$options$by)) {
           if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
             if("stack" %in% names(x$options)) {
               if(x$options$stack[1]==TRUE) {
-                x$options$by<-data.frame(group=clOptions[["subGroup"]],stack=x$options$by)
+                x$options$by<-data.frame(group=clOptions[["subgroup"]],stack=x$options$by)
               } else {
-                x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
-                x$options[["subGroup"]]<-TRUE
+                x$options$by<-data.frame(group=x$options$by,subgroup=clOptions[["subgroup"]])
+                x$options[["subgroup"]]<-TRUE
               }
             } else {
-              x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
-              x$options[["subGroup"]]<-TRUE
+              x$options$by<-data.frame(group=x$options$by,subgroup=clOptions[["subgroup"]])
+              x$options[["subgroup"]]<-TRUE
             }
           } else {
             if("pointHighlights" %in% names(x$options)) {
               if(x$options$pointHighlights[1]==TRUE) {
-                x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=x$options$by)
+                x$options$by<-data.frame(group=clOptions[["subgroup"]],highlight=x$options$by)
               } else {
-                x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
-                x$options[["subGroup"]]<-TRUE
+                x$options$by<-data.frame(group=x$options$by,subgroup=clOptions[["subgroup"]])
+                x$options[["subgroup"]]<-TRUE
               }
             } else {
-              x$options$by<-data.frame(group=x$options$by,subGroup=clOptions[["subGroup"]])
-              x$options[["subGroup"]]<-TRUE
+              x$options$by<-data.frame(group=x$options$by,subgroup=clOptions[["subgroup"]])
+              x$options[["subgroup"]]<-TRUE
             }
           }
         } else {
-          warning(paste0("Length of subGroup (",length(clOptions[["subGroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+          warning(paste0("Length of subgroup (",length(clOptions[["subgroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
         }
       } else {
-        #by is a data.frame for subGroup
-        if (length(clOptions[["subGroup"]]) == dim(x$options$by)[1]) {
+        #by is a data.frame for subgroup
+        if (length(clOptions[["subgroup"]]) == dim(x$options$by)[1]) {
           if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
             if("stack" %in% names(x$options)) {
               if(x$options$stack[1]==TRUE) {
-                if(x$options$subGroup[1]==TRUE) {
+                if(x$options$subgroup[1]==TRUE) {
                   if(dim(x$options$by)[2]>1) {
-                    x$options$by[,2]<-clOptions[["subGroup"]]
+                    x$options$by[,2]<-clOptions[["subgroup"]]
                   } else {
-                    x$options$by <- data.frame(group=clOptions[["subGroup"]],stack=x$options$by[,1])
+                    x$options$by <- data.frame(group=clOptions[["subgroup"]],stack=x$options$by[,1])
                   }
                 } else {
                   if(dim(x$options$by)[2]>1) {
-                    x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]],x$options$by[,-1])
-                    x$options[["subGroup"]]<-TRUE
+                    x$options$by<-data.frame(group=x$options$by[,1],subgroup=clOptions[["subgroup"]],x$options$by[,-1])
+                    x$options[["subgroup"]]<-TRUE
                   } else {
-                    x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
-                    x$options[["subGroup"]]<-TRUE
+                    x$options$by <- data.frame(group=x$options$by[,1], subgroup=clOptions[["subgroup"]])
+                    x$options[["subgroup"]]<-TRUE
                   }
                 }
               } else {
                 if(dim(x$options$by)[2]>1) {
-                  x$options$by[,2]<-clOptions[["subGroup"]]
-                  x$options[["subGroup"]]<-TRUE
+                  x$options$by[,2]<-clOptions[["subgroup"]]
+                  x$options[["subgroup"]]<-TRUE
                 } else {
-                  x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
-                  x$options[["subGroup"]]<-TRUE
+                  x$options$by <- data.frame(group=x$options$by[,1], subgroup=clOptions[["subgroup"]])
+                  x$options[["subgroup"]]<-TRUE
                 }
               }
             } else {
               if(dim(x$options$by)[2]>1) {
-                x$options$by[,2]<-clOptions[["subGroup"]]
-                x$options[["subGroup"]]<-TRUE
+                x$options$by[,2]<-clOptions[["subgroup"]]
+                x$options[["subgroup"]]<-TRUE
               } else {
-                x$options$by <- data.frame(group=x$options$by[,1], subGroup=clOptions[["subGroup"]])
-                x$options[["subGroup"]]<-TRUE
+                x$options$by <- data.frame(group=x$options$by[,1], subgroup=clOptions[["subgroup"]])
+                x$options[["subgroup"]]<-TRUE
               }
             }
           } else {
             if("pointHighlights" %in% names(x$options)) {
               if(x$options$pointHighlights[1]==TRUE) {
-                if(x$options$subGroup[1]==TRUE) {
+                if(x$options$subgroup[1]==TRUE) {
                   if(dim(x$options$by)[2]>1) {
-                    x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
+                    x$options$by[,2]<-data.frame(group=clOptions[["subgroup"]])
                   } else {
-                    x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=by[,1])
+                    x$options$by<-data.frame(group=clOptions[["subgroup"]],highlight=by[,1])
                   }
                 } else {
                   if(dim(x$options$by)[2]>1) {
-                    x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]],by[,-1])
-                    x$options[["subGroup"]]<-TRUE
+                    x$options$by<-data.frame(group=x$options$by[,1],subgroup=clOptions[["subgroup"]],by[,-1])
+                    x$options[["subgroup"]]<-TRUE
                   } else {
-                    x$options$by<-data.frame(group=clOptions[["subGroup"]],highlight=by[,1])
+                    x$options$by<-data.frame(group=clOptions[["subgroup"]],highlight=by[,1])
                   }
                 }
               } else {
                 if(dim(x$options$by)[2]>1) {
-                  x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
-                  x$options[["subGroup"]]<-TRUE
+                  x$options$by[,2]<-data.frame(group=clOptions[["subgroup"]])
+                  x$options[["subgroup"]]<-TRUE
                 } else {
-                  x$options$by<-data.frame(group=x$options$by[,1],subGroup=clOptions[["subGroup"]])
-                  x$options[["subGroup"]]<-TRUE
+                  x$options$by<-data.frame(group=x$options$by[,1],subgroup=clOptions[["subgroup"]])
+                  x$options[["subgroup"]]<-TRUE
                 }
               }
             } else {
               if(dim(x$options$by)[2]>1) {
-                x$options$by[,2]<-data.frame(group=clOptions[["subGroup"]])
-                x$options[["subGroup"]]<-TRUE
+                x$options$by[,2]<-data.frame(group=clOptions[["subgroup"]])
+                x$options[["subgroup"]]<-TRUE
               } else {
-                x$options$by<-data.frame(group=by[,1],subGroup=clOptions[["subGroup"]])
-                x$options[["subGroup"]]<-TRUE
+                x$options$by<-data.frame(group=by[,1],subgroup=clOptions[["subgroup"]])
+                x$options[["subgroup"]]<-TRUE
               }
             }
           }
         } else {
-          warning(paste0("Length of subGroup (",length(clOptions[["subGroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
+          warning(paste0("Length of subgroup (",length(clOptions[["subgroup"]]),") is not the same as the existing factor data (",length(x$options$by),").\nIgnoring input...\n\n"),call.=FALSE)
         }
       }
     }
@@ -464,14 +463,14 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
         if (length(clOptions[["stack"]]) == dim(x$options$by)[1]) {
           if ((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar")  {
             if(dim(x$options$by)[2]>2) {
-              if(x$options$subGroup[1]==TRUE) {
+              if(x$options$subgroup[1]==TRUE) {
                 x$options$by[,3]<-clOptions[["stack"]]
               } else {
                 x$options$by[,2]<-clOptions[["stack"]]
               }
               x$options[["stack"]]<-TRUE
             } else {
-              if(x$options$subGroup[1]==TRUE) {
+              if(x$options$subgroup[1]==TRUE) {
                 x$options$by<-data.frame(x$options$by,stack=clOptions[["stack"]])
               } else {
                 x$options$by[,2]<-clOptions[["stack"]]
@@ -501,7 +500,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
         if (length(clOptions[["highlight"]]) == dim(x$options$by)[1]) {
           if (!((is.null(plotType[1]) & x$plotType[1]=="bar") | plotType[1] == "bar"))  {
             if(dim(x$options$by)[2]>2) {
-              if(x$options$subGroup[1]==TRUE) {
+              if(x$options$subgroup[1]==TRUE) {
                 x$options$by[,3]<-clOptions[["highlight"]]
                 x$options[["highlight"]]<-TRUE
               } else {
@@ -509,7 +508,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
                 x$options[["pointHighlights"]]<-TRUE
               }
             } else {
-              if(x$options$subGroup[1]==TRUE) {
+              if(x$options$subgroup[1]==TRUE) {
                 x$options$by<-data.frame(x$options$by,highlight=clOptions[["highlight"]])
                 x$options[["pointHighlights"]]<-TRUE
                } else {
@@ -531,6 +530,7 @@ genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
       x$options[[opt]]<-clOptions[[opt]]
     }
   }
+
   if(!is.null(x$options[["groupByGene"]])){
     if(x$options[["groupByGene"]]==TRUE) {
       x$options[["flipFacts"]]<-FALSE

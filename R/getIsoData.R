@@ -150,7 +150,7 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 #' @param isoforms character; A vector of isoform IDs to include in the output. Can be used in combination with with \code{genes}.
 #' @param plotType character; Can be set to "box", "violin, "dot", "bar" or "denisity" for boxplots, violin plots, dot plots, bar plots, and kernal desity plots, respectively.
 #' @param group factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
-#' @param subGroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
+#' @param subgroup factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subgroup} is ignored.
 #' @param highlight factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
 #' @param facet factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
 #' @param stack factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
@@ -167,9 +167,9 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 #' ToDo<-1
 #'
 #' @seealso \code{\link{isoPlot}} \code{\link{showIsoforms}} \code{\link{getGeneData}}
-getIsoData <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",d)}
+getIsoData <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",d)}
 
-getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   if(is.vector(d) | is.factor(d)) {
     d<-as.numeric(as.character(d))
@@ -187,7 +187,7 @@ getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, s
       d<-data.frame(t(d))
     }
   }
-  gdOptions<-append(list(x=d,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE), idOptions)
+  gdOptions<-append(list(x=d,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE), idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
@@ -195,7 +195,7 @@ getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, s
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom Biobase exprs pData fData
-getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   isoDat<-exprs(d)[isoforms,]
   if(length(isoforms)>1) {
@@ -206,8 +206,8 @@ getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=N
   if(!is.null(group) & length(group)==1 & any(group %in% colnames(pData(d)))) {
     group<-pData(d)[,group[1]]
   }
-  if(!is.null(subGroup) & length(subGroup)==1 & any(subGroup %in% colnames(pData(d)))) {
-    subGroup<-pData(d)[,subGroup[1]]
+  if(!is.null(subgroup) & length(subgroup)==1 & any(subgroup %in% colnames(pData(d)))) {
+    subgroup<-pData(d)[,subgroup[1]]
   }
   if(!is.null(highlight) & length(highlight)==1 & any(highlight %in% colnames(pData(d)))) {
     highlight<-pData(d)[,highlight[1]]
@@ -218,7 +218,7 @@ getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=N
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(d)))) {
     stack<-pData(d)[,stack[1]]
   }
-  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }
@@ -227,7 +227,7 @@ getIsoData.ExpressionSet <- function(d,isoforms=NULL, plotType=plotType, group=N
 #' @importClassesFrom EDASeq SeqExpressionSet
 #' @importFrom EDASeq counts normCounts
 #' @importFrom Biobase pData fData
-getIsoData.SeqExpressionSet<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.SeqExpressionSet<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   if(sum(!is.na(normCounts(d)))==0 & useNormCounts==TRUE) {
     warning("The normCounts slot in this data set is empty.\nUsing raw count data instead...\n", call. = FALSE)
@@ -244,8 +244,8 @@ getIsoData.SeqExpressionSet<- function(d,isoforms=NULL, plotType=plotType, group
   if (!is.null(group) & length(group) == 1 & any(group %in% colnames(pData(d)))) {
     group <- pData(d)[, group[1]]
   }
-  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(pData(d)))) {
-    subGroup <- pData(d)[, subGroup[1]]
+  if (!is.null(subgroup) & length(subgroup) == 1 & any(subgroup %in% colnames(pData(d)))) {
+    subgroup <- pData(d)[, subgroup[1]]
   }
   if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(pData(d)))) {
     highlight <- pData(d)[, highlight[1]]
@@ -256,14 +256,14 @@ getIsoData.SeqExpressionSet<- function(d,isoforms=NULL, plotType=plotType, group
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(pData(d)))) {
     stack<-pData(d)[,stack[1]]
   }
-  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
 #' @importClassesFrom DESeq2 DESeqTransform
 #' @importFrom SummarizedExperiment assay colData rowData
-getIsoData.DESeqTransform<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.DESeqTransform<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   isoDat<-assay(d)[isoforms,]
 
@@ -271,8 +271,8 @@ getIsoData.DESeqTransform<- function(d,isoforms=NULL, plotType=plotType, group=N
   if (!is.null(group) & length(group) == 1 & any(group %in% colnames(colData(d)))) {
     group <- colData(d)[, group[1]]
   }
-  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(colData(d)))) {
-    subGroup <- colData(d)[, subGroup[1]]
+  if (!is.null(subgroup) & length(subgroup) == 1 & any(subgroup %in% colnames(colData(d)))) {
+    subgroup <- colData(d)[, subgroup[1]]
   }
   if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(colData(d)))) {
     highlight <- colData(d)[, highlight[1]]
@@ -283,14 +283,14 @@ getIsoData.DESeqTransform<- function(d,isoforms=NULL, plotType=plotType, group=N
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(d)))) {
     stack<-colData(d)[,stack[1]]
   }
-  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #' @importFrom SummarizedExperiment assay colData rowData
-getIsoData.SummarizedExperiment<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.SummarizedExperiment<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   isoDat<-assay(d)[isoforms,]
 
@@ -298,8 +298,8 @@ getIsoData.SummarizedExperiment<- function(d,isoforms=NULL, plotType=plotType, g
   if (!is.null(group) & length(group) == 1 & any(group %in% colnames(colData(d)))) {
     group <- colData(d)[, group[1]]
   }
-  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(colData(d)))) {
-    subGroup <- colData(d)[, subGroup[1]]
+  if (!is.null(subgroup) & length(subgroup) == 1 & any(subgroup %in% colnames(colData(d)))) {
+    subgroup <- colData(d)[, subgroup[1]]
   }
   if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(colData(d)))) {
     highlight <- colData(d)[, highlight[1]]
@@ -310,13 +310,13 @@ getIsoData.SummarizedExperiment<- function(d,isoforms=NULL, plotType=plotType, g
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(d)))) {
     stack<-colData(d)[,stack[1]]
   }
-  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }
 
 #' @importClassesFrom limma EList
-getIsoData.EList<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
+getIsoData.EList<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   isoDat<-d$E[isoforms,]
 
@@ -328,11 +328,11 @@ getIsoData.EList<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subG
       group <- d$targets[,group[1]]
     }
   }
-  if (!is.null(subGroup) & length(subGroup) == 1 & any(subGroup %in% colnames(d$targets) | subGroup %in% colnames(d$design))) {
-    if(any(subGroup %in% colnames(d$design))){
-      subGroup <- d$design[,subGroup[1]]
+  if (!is.null(subgroup) & length(subgroup) == 1 & any(subgroup %in% colnames(d$targets) | subgroup %in% colnames(d$design))) {
+    if(any(subgroup %in% colnames(d$design))){
+      subgroup <- d$design[,subgroup[1]]
     } else {
-      subGroup <- d$targets[,subGroup[1]]
+      subgroup <- d$targets[,subgroup[1]]
     }
   }
   if (!is.null(highlight) & length(highlight) == 1 & any(highlight %in% colnames(d$targets) | highlight %in% colnames(d$design))) {
@@ -356,7 +356,7 @@ getIsoData.EList<- function(d,isoforms=NULL, plotType=plotType, group=NULL, subG
       stack <- d$targets[,stack[1]]
     }
   }
-  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subGroup=subGroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
+  gdOptions<-list(x=isoDat,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE)
   gdOptions<-append(gdOptions,idOptions)
   return(do.call("getGeneData", gdOptions))
 }

@@ -47,7 +47,7 @@
 #' geneScatter(t(iris[orderedIris,3]), color=iris$Species[orderedIris], type="h")
 #'
 #' #3D plotting. You can set useRgl=TRUE for rgl based interactive graphics
-#' geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, useRgl=FALSE, size=iris[,4] ,pointSize=1)
+#' geneScatter(t(iris[,1:3]), color=iris$Species, logScale=2, size=iris[,4] ,pointSize=1)
 #'
 #' @importFrom purrr map
 #' @importFrom Biobase exprs pData fData
@@ -87,7 +87,7 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
     }
   }
   #Collecting the expression and factor data
-  data<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=color, subGroup=shape,highlight=size,facet=facet, stack=NULL, useNormCounts=useNormCounts)
+  data<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=color, subgroup=shape,highlight=size,facet=facet, stack=NULL, useNormCounts=useNormCounts)
 
   #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
   if(!is.null(color)){
@@ -95,13 +95,13 @@ geneScatter.default <- function(x, genes=NULL, color=NULL, shape=NULL, size=NULL
   }
   if(!is.null(shape)){
     #This is an issue because we are being lazy and repurposing getGeneData for use here.
-    #The subGroup variable is discarded if more than one gene is used as this effectively eats of one of the two possible grouping factors.
+    #The subgroup variable is discarded if more than one gene is used as this effectively eats of one of the two possible grouping factors.
     #If this is the case then shape may be left as NULL. If this happens we just run it again as the grouping variable.
-    if(is.null(data$by$subGroup)) {
-      data2<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=shape,subGroup=size, highlight=color,facet=facet, stack=NULL, useNormCounts=useNormCounts)
+    if(is.null(data$by$subgroup)) {
+      data2<-getGeneData(x=x, gene=genes, plotType="box", symbol=symbol,group=shape,subgroup=size, highlight=color,facet=facet, stack=NULL, useNormCounts=useNormCounts)
       shape<-data2$by$group
     } else {
-      shape<-data$by$subGroup
+      shape<-data$by$subgroup
     }
   }
   if(!is.null(size)){

@@ -9,7 +9,7 @@ getIsoData(
   isoforms = NULL,
   plotType = plotType,
   group = NULL,
-  subGroup = NULL,
+  subgroup = NULL,
   highlight = NULL,
   facet = NULL,
   stack = NULL,
@@ -30,7 +30,7 @@ getIsoData(
 
 \item{group}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.}
 
-\item{subGroup}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.}
+\item{subgroup}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subgroup} is ignored.}
 
 \item{highlight}{factor or name of factor to be exracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.}
 

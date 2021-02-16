@@ -183,7 +183,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           shiny::fillRow(flex=c(7,1,5),
               shiny::fillCol(
               shiny::selectInput("groupFactorSelector", label="Select a Grouping Factor",choices=factorList,selected = if(is.null(gpOptions$group)){"None"} else if (gpOptions$group %in% factorList){gpOptions$group}else{"None"}),
-              shiny::selectInput("subGroupFactorSelector", label="Select a Subgroup Factor",choices=factorList,selected = if(is.null(gpOptions$subGroup)){"None"} else if (gpOptions$subGroup %in% factorList){gpOptions$subGroup}else{"None"}),
+              shiny::selectInput("subgroupFactorSelector", label="Select a Subgroup Factor",choices=factorList,selected = if(is.null(gpOptions$subgroup)){"None"} else if (gpOptions$subgroup %in% factorList){gpOptions$subgroup}else{"None"}),
               shiny::selectInput("highlightFactorSelector", label="Select a Highlighting Factor",choices=factorList,selected = if(is.null(gpOptions$highlight)){"None"} else if (gpOptions$highlight %in% factorList){gpOptions$highlight}else{"None"}),
               shiny::selectInput("stackFactorSelector", label="Select a Stacking Factor",choices=factorList,selected = if(is.null(gpOptions$stack)){"None"} else if (gpOptions$stack %in% factorList){gpOptions$stack}else{"None"}),
               shiny::checkboxInput("groupByGene",label="Group by Gene", value=if(is.null(gpOptions$groupByGene)){TRUE}else{gpOptions$groupByGene})
@@ -197,7 +197,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
             ),
             shiny::fillCol(
               shiny::textInput("group", label = "Group", value = gpOptions$group),
-              shiny::textInput("subGroup", label = "Subgroup", value = gpOptions$subGroup),
+              shiny::textInput("subgroup", label = "Subgroup", value = gpOptions$subgroup),
               shiny::textInput("highlight", label = "Highlight", value = gpOptions$highlight),
               shiny::textInput("stack", label = "Stack (Bar Plot Only)", value = gpOptions$stack),
               shiny::checkboxInput("asPercentage",label="As Percent (Stacked Bars)", value= if(is.null(gpOptions$asPercentage)){FALSE}else{gpOptions$asPercentage})
@@ -248,7 +248,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
             ),
             shiny::fillRow(
               shiny::textInput("groupNames",value=if(is.null(gpOptions$groupNames)){NULL}else if (gpOptions$groupNames==""){NULL} else {paste0(gpOptions$groupNames, collapse = ",")}, label="Group Labels",width="95%"),
-              shiny::textInput("subGroupNames",label="Subgroup Labels",value=if(is.null(gpOptions$subGroupNames)){NULL}else if (gpOptions$subGroupNames==""){NULL} else {paste0(gpOptions$subGroupNames, collapse = ", ")},width="95%"),
+              shiny::textInput("subgroupNames",label="Subgroup Labels",value=if(is.null(gpOptions$subgroupNames)){NULL}else if (gpOptions$subgroupNames==""){NULL} else {paste0(gpOptions$subgroupNames, collapse = ", ")},width="95%"),
               shiny::checkboxInput("rotateLabels", label = "Rotate Group Labels",value=if(is.null(gpOptions$rotateLabels)){FALSE} else {if(gpOptions$rotateLabels==TRUE){TRUE}else{FALSE}}, width="95%")
             )
           ),
@@ -389,8 +389,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
               shiny::sliderInput("groupLabelSpacing", label="Group Label Spacing", min=.4,max=2, step=0.02, value=if(is.null(gpOptions$groupLabelSpacing)){iTheme$groupLabelSpacing}else{gpOptions$groupLabelSpacing}, width="95%")
             ),
             shiny::fillRow(
-              shiny::textInput("subGroupLabelCol", label="Subgroup Label Color",value=if(is.null(gpOptions$plotColors)){NULL} else if(is.null(gpOptions$plotColors$subGroupLabels)){NULL} else {paste0(gpOptions$plotColors$subGroupLabels, collapse = ", ")}, width="95%"),
-              shiny::sliderInput("subGroupLabSize", label="Subgroup Label Size", min=.2,max=2,step=0.02, value=if(is.null(gpOptions$subGroupLabSize)){iTheme$subGroupLabSize}else{gpOptions$subGroupLabSize}, width="95%"),
+              shiny::textInput("subgroupLabelCol", label="Subgroup Label Color",value=if(is.null(gpOptions$plotColors)){NULL} else if(is.null(gpOptions$plotColors$subgroupLabels)){NULL} else {paste0(gpOptions$plotColors$subgroupLabels, collapse = ", ")}, width="95%"),
+              shiny::sliderInput("subgroupLabSize", label="Subgroup Label Size", min=.2,max=2,step=0.02, value=if(is.null(gpOptions$subgroupLabSize)){iTheme$subgroupLabSize}else{gpOptions$subgroupLabSize}, width="95%"),
               shiny::sliderInput("subgroupLabelSpacing", label="Subgroup Label Spacing", min=0.01, max=1.5, step=0.01, value=if(is.null(gpOptions$subgroupLabelSpacing)){iTheme$subgroupLabelSpacing}else{gpOptions$subgroupLabelSpacing}, width="95%")
             )
           ),
@@ -516,7 +516,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     shiny::isolate(
       plotOptions<-shiny::reactiveValues(gene=gpOptions$gene,
                                 group=if(is.null(gpOptions$group)){NULL}else{gpOptions$group},
-                                subGroup=if(is.null(gpOptions$subGroup)){NULL}else{gpOptions$subGroup},
+                                subgroup=if(is.null(gpOptions$subgroup)){NULL}else{gpOptions$subgroup},
                                 highlight=if(is.null(gpOptions$highlight)){NULL}else{gpOptions$highlight},
                                 stack=if(is.null(gpOptions$stack)){NULL}else{gpOptions$stack},
                                 plotType=if(is.null(gpOptions$plotType[1])){"violin"}else{gpOptions$plotType[1]},
@@ -554,7 +554,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                 errorBarLineType=if(is.null(gpOptions$errorBarLineType)){iTheme[[paste0("errorBarLineType",IPT)]]}else{gpOptions$errorBarLineType},
                                 errorCapType=if(is.null(gpOptions$errorCapType)){iTheme[["errorCapType"]]}else{gpOptions$errorCapType},
                                 subgroupLabelSpacing=if(is.null(gpOptions$subgroupLabelSpacing)){iTheme[["subgroupLabelSpacing"]]}else{gpOptions$subgroupLabelSpacing},
-                                subGroupLabSize=if(is.null(gpOptions$subGroupLabSize)){iTheme[["subGroupLabSize"]]}else{gpOptions$subGroupLabSize},
+                                subgroupLabSize=if(is.null(gpOptions$subgroupLabSize)){iTheme[["subgroupLabSize"]]}else{gpOptions$subgroupLabSize},
                                 axisText=if(is.null(gpOptions$axisText)){c("","")}else{gpOptions$axisText},
                                 extendTicks=if(is.null(gpOptions$extendTicks)){TRUE}else{gpOptions$extendTicks},
                                 strictLimits=if(is.null(gpOptions$strictLimits)){FALSE}else{gpOptions$strictLimits},
@@ -579,7 +579,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       RSOveride$npData<-genePlot(data,
                                  gene=plotOptions$gene,
                                  group=plotOptions$group,
-                                 subGroup=plotOptions$subGroup,
+                                 subgroup=plotOptions$subgroup,
                                  highlight=plotOptions$highlight,
                                  stack=plotOptions$stack,
                                  plotType=plotOptions$plotType[1],
@@ -600,7 +600,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  rotateY=plotOptions$rotateY,
                                  rotateLabels=plotOptions$rotateLabels,
                                  groupNames=plotOptions$groupNames,
-                                 subGroupLabels=plotOptions$subGroupLabels,
+                                 subgroupLabels=plotOptions$subgroupLabels,
                                  minorTick=plotOptions$minorTick,
                                  guides=plotOptions$guides,
                                  minorGuides=plotOptions$minorGuides,
@@ -627,7 +627,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  groupLabelSpacing=plotOptions$groupLabelSpacing,
                                  groupLabSize=plotOptions$groupLabSize,
                                  titleSize=plotOptions$titleSize,
-                                 subGroupLabSize=plotOptions$subGroupLabSize,
+                                 subgroupLabSize=plotOptions$subgroupLabSize,
                                  subgroupLabelSpacing=plotOptions$subgroupLabelSpacing,
                                  axisText=plotOptions$axisText,
                                  extendTicks=plotOptions$extendTick,
@@ -650,6 +650,10 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  useNormCounts=plotOptions$useNormCounts)
 
       #######Begin section constructing minimal options needed using vcommand ############
+      #This is used to generate the virtual code example in the advanced tab
+      #Outside of RStudio this command is actually used to generate the the plot after shiny is finished
+      #If using RStudio, due to some unexplained issues, the npData object generated from the preview plot
+      #and plotOptions is returned and can be plotted later.
       vcommand<-list(x=dbName)
       if(!is.null(plotOptions$gene[1])) {
         if(plotOptions$gene[1]!="") {
@@ -661,32 +665,50 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
         }
       }
       if(!is.null(plotOptions$group[1])) {
-        if(plotOptions$group[1]!=FALSE) {
-          if(is.character(plotOptions$group[1]) & length(plotOptions$group)==1) {
-            vcommand$group<-paste0("\"",plotOptions$group,"\"")
-          } else {
-            groupVal<-shiny::renderText( {input$group} )
-            vcommand$group<-groupVal()
+        groupVal<-shiny::renderText( {input$group} )
+        if(!is.null(groupVal())) {
+          if(groupVal() != "" & groupVal() != FALSE){
+            if(groupVal() == input$groupFactorSelector) {
+              vcommand$group<-paste0("\"",groupVal(),"\"")
+            } else {
+              vcommand$group<-groupVal()
+            }
           }
         }
       }
-      if(!is.null(plotOptions$subGroup[1])) {
-        if(plotOptions$subGroup[1]!=FALSE) {
-          if(is.character(plotOptions$subGroup[1]) & length(plotOptions$subGroup)==1) {
-            vcommand$subGroup<-paste0("\"",plotOptions$subGroup,"\"")
-          } else {
-            subGroupVal<-shiny::renderText( {input$subGroup} )
-            vcommand$subGroup<-subGroupVal()
+      if(!is.null(plotOptions$subgroup[1])) {
+        subgroupVal<-shiny::renderText( {input$subgroup} )
+        if(!is.null(subgroupVal())) {
+          if(subgroupVal() != "" & subgroupVal() != FALSE){
+            if(subgroupVal() == input$subgroupFactorSelector) {
+              vcommand$subgroup<-paste0("\"",subgroupVal(),"\"")
+            } else {
+              vcommand$subgroup<-subgroupVal()
+            }
           }
         }
       }
       if(!is.null(plotOptions$highlight[1])) {
-        if(plotOptions$highlight[1]!=FALSE) {
-          if(is.character(plotOptions$highlight[1]) & length(plotOptions$highlight)==1) {
-            vcommand$highlight<-paste0("\"",plotOptions$highlight,"\"")
-          } else {
-            highlightVal<-shiny::renderText( {input$highlight} )
-            vcommand$highlight<-highlightVal()
+        highlightVal<-shiny::renderText( {input$highlight} )
+        if(!is.null(highlightVal())) {
+          if(highlightVal() != "" & highlightVal() != FALSE){
+            if(highlightVal() == input$highlightFactorSelector) {
+              vcommand$highlight<-paste0("\"",highlightVal(),"\"")
+            } else {
+              vcommand$highlight<-highlightVal()
+            }
+          }
+        }
+      }
+      if(!is.null(plotOptions$stack[1])) {
+        stackVal<-shiny::renderText( {input$stack} )
+        if(!is.null(stackVal())) {
+          if(stackVal() != "" & stackVal() != FALSE){
+            if(stackVal() == input$stackFactorSelector) {
+              vcommand$stack<-paste0("\"",stackVal(),"\"")
+            } else {
+              vcommand$stack<-stackVal()
+            }
           }
         }
       }
@@ -755,9 +777,11 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
 
       if(!is.null(plotOptions$main)) {
         if(plotOptions$main!=TRUE & plotOptions$main != ""){
-          if(length(plotOptions$gene)>1 & plotOptions$main!=paste0(c("Gene Expression:",paste0(plotOptions$gene,collapse=", ")),collapse=" ")) {
-            vcommand$main<-paste0("\"",plotOptions$main,"\"")
-          } else if (length(plotOptions$gene)==1 & plotOptions$main != paste0(plotOptions$gene, " Expression")) {
+          if(length(plotOptions$gene)>1) {
+            if(plotOptions$main[1] != paste0(c("Gene Expression:",paste0(plotOptions$gene,collapse=", ")),collapse=" ")) {
+              vcommand$main<-paste0("\"",plotOptions$main,"\"")
+            }
+          } else if (length(plotOptions$gene)==1 & plotOptions$main[1] != paste0(plotOptions$gene, " Expression")) {
             vcommand$main<-paste0("\"",plotOptions$main,"\"")
           }
         }
@@ -766,10 +790,10 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       if(plotOptions$legendSize!=cTheme$legendSize) {
         vcommand$legendSize<-plotOptions$legendSize
       }
-      if(plotOptions$logScale!=FALSE) {
+      if(sum(plotOptions$logScale)>0) {
         vcommand$logScale<-plotOptions$logScale
       }
-      if(plotOptions$logAdjustment!=1 & plotOptions$logScale!=FALSE) {
+      if(plotOptions$logAdjustment!=1 & sum(plotOptions$logScale)>0) {
         vcommand$logAdjustment<-plotOptions$logAdjustment
       }
       if(!is.null(plotOptions$ylab)) {
@@ -791,12 +815,12 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           vcommand$groupNames<-plotOptions$groupNames
         }
       }
-      if(!is.null(plotOptions$subGroupLabels[1])){
-        if(plotOptions$subGroupLabels[1]!="") {
-          vcommand$subGroupLabels<-plotOptions$subGroupLabels
+      if(!is.null(plotOptions$subgroupLabels[1])){
+        if(plotOptions$subgroupLabels[1]!="") {
+          vcommand$subgroupLabels<-plotOptions$subgroupLabels
         }
       }
-      if((plotOptions$logScale==FALSE & cTheme$minorTick!=plotOptions$minorTick) | (plotOptions$logScale!=FALSE & cTheme$minorTickLS!=plotOptions$minorTick)){
+      if((sum(plotOptions$logScale)>0 & cTheme$minorTick!=plotOptions$minorTick) | (sum(plotOptions$logScale)>0 & cTheme$minorTickLS!=plotOptions$minorTick)){
         vcommand$minorTick<-plotOptions$minorTick
       }
       if(cTheme$guides!=plotOptions$guides) {
@@ -927,9 +951,9 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           vcommand$yAxisLabSize<-plotOptions$yAxisLabSize
         }
       }
-      if(!is.null(plotOptions$subGroupLabSize)) {
-        if(cTheme$subGroupLabSize!=plotOptions$subGroupLabSize) {
-          vcommand$subGroupLabSize<-plotOptions$subGroupLabSize
+      if(!is.null(plotOptions$subgroupLabSize)) {
+        if(cTheme$subgroupLabSize!=plotOptions$subgroupLabSize) {
+          vcommand$subgroupLabSize<-plotOptions$subgroupLabSize
         }
       }
       if(!is.null(plotOptions$subgroupLabelSpacing)) {
@@ -1062,7 +1086,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
         }
       }
       #colorTranslator<-c("points","lines","fill","vioBoxFill","vioBoxLineCol",)
-      #names(colorTranslator)<-c("pointColors", "lineColors", "fillColors", "vioBoxFill", "vioBoxLineCol", "titleCol", "labelCol","subGroupLabelCol","yAxisLabelCol","subtitleCol","dataAxisLablesCol","axisCol","minorTickColor","majorGuideColor","minorGuidesColor","majorTickColor","canvasColor","LegendBG","legendBorder","LegendLineCol")
+      #names(colorTranslator)<-c("pointColors", "lineColors", "fillColors", "vioBoxFill", "vioBoxLineCol", "titleCol", "labelCol","subgroupLabelCol","yAxisLabelCol","subtitleCol","dataAxisLablesCol","axisCol","minorTickColor","majorGuideColor","minorGuidesColor","majorTickColor","canvasColor","LegendBG","legendBorder","LegendLineCol")
       if(gpOptions$symbol!="GeneSymbol"){
         vcommand$symbol<-gpOptions$symbol
       }
@@ -1156,28 +1180,28 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       }
     })
 
-    shiny::observeEvent(input$subGroupFactorSelector, {
-      if(!is.null(shiny::req( {input$subGroupFactorSelector })) & RSOveride$rso==FALSE) {
-        shiny::updateTextInput(session, "subGroup", value = input$subGroupFactorSelector )
+    shiny::observeEvent(input$subgroupFactorSelector, {
+      if(!is.null(shiny::req( {input$subgroupFactorSelector })) & RSOveride$rso==FALSE) {
+        shiny::updateTextInput(session, "subgroup", value = input$subgroupFactorSelector )
       }
     })
 
-    shiny::observeEvent(input$subGroup, {
+    shiny::observeEvent(input$subgroup, {
       groupVal<-shiny::renderText( {shiny::req(input$group)} )
-      if(!is.null(shiny::req( {input$subGroup })) & groupVal()!="FALSE") {
-        subGroupVal<-shiny::renderText( {input$subGroup} )
-        if(subGroupVal()!="") {
-          if(subGroupVal() == shiny::req( {input$subGroupFactorSelector} )){
-            plotOptions[["subGroup"]]<-subGroupVal()
+      if(!is.null(shiny::req( {input$subgroup })) & groupVal()!="FALSE") {
+        subgroupVal<-shiny::renderText( {input$subgroup} )
+        if(subgroupVal()!="") {
+          if(subgroupVal() == shiny::req( {input$subgroupFactorSelector} )){
+            plotOptions[["subgroup"]]<-subgroupVal()
           } else {
-            plotOptions[["subGroup"]] <- tryCatch(
-              { suppressWarnings(eval(parse(text=subGroupVal()))) },
-              warning = function(w) {plotOptions[["subGroup"]] <-subGroupVal()},
-              error = function(e) {plotOptions[["subGroup"]] <-FALSE}
+            plotOptions[["subgroup"]] <- tryCatch(
+              { suppressWarnings(eval(parse(text=subgroupVal()))) },
+              warning = function(w) {plotOptions[["subgroup"]] <-subgroupVal()},
+              error = function(e) {plotOptions[["subgroup"]] <-FALSE}
             )
           }
         } else {
-          plotOptions[["subGroup"]]<-FALSE
+          plotOptions[["subgroup"]]<-FALSE
         }
       }
     })
@@ -1191,14 +1215,18 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     shiny::observeEvent(input$highlight, {
       if(!is.null(shiny::req( {input$highlight }))) {
         highlightVal<-shiny::renderText( {input$highlight} )
-        if(highlightVal() == shiny::req( {input$highlightFactorSelector} )){
-          plotOptions[["highlight"]]<-highlightVal()
+        if(highlightVal()!="") {
+          if(highlightVal() == shiny::req( {input$highlightFactorSelector} )){
+            plotOptions[["highlight"]]<-highlightVal()
+          } else {
+            plotOptions[["highlight"]] <- tryCatch(
+              { suppressWarnings(eval(parse(text=highlightVal()))) },
+              warning = function(w) {plotOptions[["highlight"]] <-highlightVal()},
+              error = function(e) {plotOptions[["highlight"]] <-FALSE}
+            )
+          }
         } else {
-          plotOptions[["highlight"]] <- tryCatch(
-            { suppressWarnings(eval(parse(text=highlightVal()))) },
-            warning = function(w) {plotOptions[["highlight"]] <-highlightVal()},
-            error = function(e) {plotOptions[["highlight"]] <-FALSE}
-          )
+          plotOptions[["highlight"]]<-FALSE
         }
       }
     })
@@ -1212,14 +1240,18 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     shiny::observeEvent(input$stack, {
       if(!is.null(shiny::req( {input$stack }))) {
         stackVal<-shiny::renderText( {input$stack} )
-        if(stackVal() == shiny::req( {input$stackFactorSelector} )){
-          plotOptions[["stack"]]<-stackVal()
+        if(stackVal()!="") {
+          if(stackVal() == shiny::req( {input$stackFactorSelector} )){
+            plotOptions[["stack"]]<-stackVal()
+          } else {
+            plotOptions[["stack"]] <- tryCatch(
+              { suppressWarnings(eval(parse(text=stackVal()))) },
+              warning = function(w) {plotOptions[["stack"]] <-stackVal()},
+              error = function(e) {plotOptions[["stack"]] <-FALSE}
+            )
+          }
         } else {
-          plotOptions[["stack"]] <- tryCatch(
-            { suppressWarnings(eval(parse(text=stackVal()))) },
-            warning = function(w) {plotOptions[["stack"]] <-stackVal()},
-            error = function(e) {plotOptions[["stack"]] <-FALSE}
-          )
+          plotOptions[["stack"]]<-FALSE
         }
       }
     })
@@ -1374,7 +1406,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
 
     shiny::observeEvent(input$legend, {
       groupVal<- shiny::renderText( {shiny::req(input$group)} )
-      subGroupVal<- shiny::renderText( {shiny::req(input$subGroup)} )
+      subgroupVal<- shiny::renderText( {shiny::req(input$subgroup)} )
       highlightVal<- shiny::renderText( {shiny::req(input$highlight)} )
       if(length(aGenes$g)>1) {
         if(groupVal() != "FALSE" | highlightVal() != FALSE) {
@@ -1389,7 +1421,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           shiny::updateCheckboxInput(session,"legend",value=FALSE)
         }
       } else {
-        if(highlightVal() != FALSE | (groupVal() !=FALSE & subGroupVal() != FALSE)) {
+        if(highlightVal() != FALSE | (groupVal() !=FALSE & subgroupVal() != FALSE)) {
           legendVal<- shiny::renderText( {input$legend} )
           if(legendVal() == "TRUE") {
             plotOptions$legend <- "Legend"
@@ -1527,12 +1559,12 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       }
     })
 
-    shiny::observeEvent(input$subGroupNames, {
-      subGroupNamesVal <- shiny::renderText( {input$subGroupNames} )
-      if(is.null(subGroupNamesVal()) | subGroupNamesVal() == "" ){
-        plotOptions$subGroupLabels<-NULL
+    shiny::observeEvent(input$subgroupNames, {
+      subgroupNamesVal <- shiny::renderText( {input$subgroupNames} )
+      if(is.null(subgroupNamesVal()) | subgroupNamesVal() == "" ){
+        plotOptions$subgroupLabels<-NULL
       } else {
-        plotOptions$subGroupLabels<-trimws(unlist(strsplit(subGroupNamesVal(),",")))
+        plotOptions$subgroupLabels<-trimws(unlist(strsplit(subgroupNamesVal(),",")))
       }
     })
 
@@ -1642,7 +1674,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       }
       #If current settings match the old theme values, they are updated to the settings of the new theme
       #updating sliderInputs
-      for(i in c("legendSize","width","lWidth","pointLaneWidth","errorCapWidth","pointSize","vioBoxWidth","titleSize","axisLabelSize","curvePoints","groupLabelSpacing","groupLabSize","subGroupLabSize","subgroupLabelSpacing","yAxisLabSize","subSize")) {
+      for(i in c("legendSize","width","lWidth","pointLaneWidth","errorCapWidth","pointSize","vioBoxWidth","titleSize","axisLabelSize","curvePoints","groupLabelSpacing","groupLabSize","subgroupLabSize","subgroupLabelSpacing","yAxisLabSize","subSize")) {
         #Some options have plotType specific settings that need to be handled usng th cPT variable.
         if(i %in% c("width","lWidth","pointLaneWidth","errorCapWidth","pointSize")) {
           if(i == "pointSize" | i == "pointLaneWidth") {
@@ -1891,13 +1923,13 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       plotOptions$groupLabelSpacing<-input$groupLabelSpacing
     })
 
-    shiny::observeEvent(input$subGroupLabelCol, {
-      cCol<-shiny::renderText(input$subGroupLabelCol)
+    shiny::observeEvent(input$subgroupLabelCol, {
+      cCol<-shiny::renderText(input$subgroupLabelCol)
       if(is.null(cCol()) | cCol()=="") {
-        plotOptions$plotColors$subGroupLabels<-NULL
+        plotOptions$plotColors$subgroupLabels<-NULL
       } else {
         cVal<-trimws(unlist(strsplit(cCol(),",")))
-        plotOptions$plotColors$subGroupLabels<- cVal
+        plotOptions$plotColors$subgroupLabels<- cVal
       }
     })
 
@@ -1905,8 +1937,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       plotOptions$axisLabelSize<-input$axisLabelSize
     })
 
-    shiny::observeEvent(input$subGroupLabSize, {
-      plotOptions$subGroupLabSize<-input$subGroupLabSize
+    shiny::observeEvent(input$subgroupLabSize, {
+      plotOptions$subgroupLabSize<-input$subgroupLabSize
     })
 
     shiny::observeEvent(input$subgroupLabelSpacing, {
@@ -2174,7 +2206,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       shiny::updateSelectizeInput(session,"activeGenes",choices=gpOptions$gene)
       shiny::updateCheckboxInput(session,"groupByGene", value=if(is.null(gpOptions$groupByGene)){TRUE}else{gpOptions$groupByGene})
       shiny::updateTextInput(session,"group",value = gpOptions$group)
-      shiny::updateTextInput(session,"subGroup",value = gpOptions$subGroup)
+      shiny::updateTextInput(session,"subgroup",value = gpOptions$subgroup)
       shiny::updateTextInput(session,"highlight",value = gpOptions$highlight)
       shiny::updateTextInput(session,"stack",value = gpOptions$stack)
       shiny::updateTextInput(session,"group",value = gpOptions$group)
@@ -2194,7 +2226,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       shiny::updateTextInput(session, "subtitle",  value = if(is.null(gpOptions$subtitle)){""}else if (gpOptions$subtitle==""){""} else {gpOptions$subtitle})
       shiny::updateCheckboxInput(session, "rotateY", value = if(is.null(gpOptions$rotateY)){FALSE} else {if(gpOptions$rotateY==TRUE){TRUE}else{FALSE}})
       shiny::updateTextInput(session, "groupNames", value=if(is.null(gpOptions$groupNames)){""}else if (gpOptions$groupNames==""){} else {paste0(gpOptions$groupNames, collapse = ",")})
-      shiny::updateTextInput(session, "subGroupNames", value=if(is.null(gpOptions$subGroupNames)){""}else if (gpOptions$subGroupNames==""){""} else {paste0(gpOptions$subGroupNames, collapse = ", ")})
+      shiny::updateTextInput(session, "subgroupNames", value=if(is.null(gpOptions$subgroupNames)){""}else if (gpOptions$subgroupNames==""){""} else {paste0(gpOptions$subgroupNames, collapse = ", ")})
       shiny::updateCheckboxInput(session, "rotateLabels", value=if(is.null(gpOptions$rotateLabels)){FALSE} else {if(gpOptions$rotateLabels==TRUE){TRUE}else{FALSE}})
       shiny::updateNumericInput(session, "minorTick", value=if(!is.null(gpOptions$minorTick)){as.numeric(gpOptions$minorTick)} else if(gpOptions$logScale==FALSE) {as.numeric(iTheme$minorTick)}else{as.numeric(iTheme$minorTickLS)})
       shiny::updateCheckboxInput(session, "showMinorGuide",value = if(is.null(gpOptions$minorGuides)){if(is.null(gpOptions$guides)){iTheme$guides}else{gpOptions$guides}}else{gpOptions$minorGuides})
@@ -2234,8 +2266,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       shiny::updateTextInput(session, "labelCol", value=if(is.null(gpOptions$plotColors)){""}else if(is.null(gpOptions$plotColors$title)){""}else if(gpOptions$plotColors$title[1]==iTheme$plotColors$title[1]){""}else{gpOptions$plotColors$title[1]})
       shiny::updateSliderInput(session, "groupLabSize", value=if(is.null(gpOptions$groupLabSize)){iTheme$groupLabSize}else{gpOptions$groupLabSize})
       shiny::updateSliderInput(session, "groupLabelSpacing", value=if(is.null(gpOptions$groupLabelSpacing)){iTheme$groupLabelSpacing}else{gpOptions$groupLabelSpacing})
-      shiny::updateTextInput(session, "subGroupLabelCol", value=if(is.null(gpOptions$plotColors)){""} else if(is.null(gpOptions$plotColors$subGroupLabels)){""} else {paste0(gpOptions$plotColors$subGroupLabels, collapse = ", ")})
-      shiny::updateSliderInput(session, "subGroupLabSize", value=if(is.null(gpOptions$subGroupLabSize)){iTheme$subGroupLabSize}else{gpOptions$subGroupLabSize})
+      shiny::updateTextInput(session, "subgroupLabelCol", value=if(is.null(gpOptions$plotColors)){""} else if(is.null(gpOptions$plotColors$subgroupLabels)){""} else {paste0(gpOptions$plotColors$subgroupLabels, collapse = ", ")})
+      shiny::updateSliderInput(session, "subgroupLabSize", value=if(is.null(gpOptions$subgroupLabSize)){iTheme$subgroupLabSize}else{gpOptions$subgroupLabSize})
       shiny::updateSliderInput(session, "subgroupLabelSpacing", value=if(is.null(gpOptions$subgroupLabelSpacing)){iTheme$subgroupLabelSpacing}else{gpOptions$subgroupLabelSpacing})
       shiny::updateTextInput(session, "yAxisLabelCol", value=if(is.null(gpOptions$plotColors)){""} else if(is.null(gpOptions$plotColors$axisLabels)){""} else {gpOptions$plotColors$axisLabels[1]})
       shiny::updateSliderInput(session, "axisLabelSize", value=if(is.null(gpOptions$axisLabelSize)){iTheme$axisLabelSize}else{gpOptions$axisLabelSize})

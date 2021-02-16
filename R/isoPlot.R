@@ -23,7 +23,7 @@
 #' @param transcriptType character; Returns only those isoforms where the transcript type column has a substring that matches the character value supplied such as 'protein' in 'protein_coding'. The transcript type column is determined by the \code{ttype} option.
 #' @param asPercentage logical; If set to \code{\link{TRUE}}, the isoform expression is given as a percentage of total gene expression (defaults to \code{\link{FALSE}})
 #' @param group factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used as the primary grouping factor.
-#' @param subGroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subGroup} is ignored.
+#' @param subgroup factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to subgroup data unless multiple genes are selected in which case \code{subgroup} is ignored.
 #' @param highlight factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used to color data points by factor levels. Only valid for graphs with point overlays.
 #' @param facet factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Split the data into multiple smaller graphs.
 #' @param stack factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.
@@ -50,7 +50,7 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link{genePlot}}, \code{\link{showIsoforms}}, \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
+isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom tidyr gather
@@ -59,7 +59,7 @@ isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","v
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot","box","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subGroup=NULL, highlight=NULL, facet=NULL, stack=TRUE, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
+isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot","box","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=TRUE, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
 
   npOptions<-list(...)
   #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
@@ -67,7 +67,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
   if(sum(isoforms==FALSE)==1 | sum(is.na(isoforms))==1) {isoforms<-NULL}
   if(sum(gene==FALSE)==1 | sum(is.na(gene))==1) {gene<-NULL}
   if((length(group)==1 & sum(group==FALSE)==1) | sum(is.na(group))==length(group)) {group<-NULL}
-  if((length(subGroup)==1 & sum(subGroup==FALSE)==1) | sum(is.na(subGroup))==length(subGroup)) {subGroup<-NULL}
+  if((length(subgroup)==1 & sum(subgroup==FALSE)==1) | sum(is.na(subgroup))==length(subgroup)) {subgroup<-NULL}
   if((length(stack)==1 & sum(stack==FALSE)==1) | sum(is.na(stack))==length(stack)) {stack<-NULL}
   if((length(highlight)==1 & sum(highlight==FALSE)==1) | sum(is.na(highlight))==length(highlight)) {highlight<-NULL}
 
@@ -103,7 +103,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
   #Setting the legend to turn on automatically
   if(is.null(legend)){
     legend<-FALSE
-    if(!is.null(subGroup) | !is.null(stack)| !is.null(highlight)) {
+    if(!is.null(subgroup) | !is.null(stack)| !is.null(highlight)) {
       legend<-"Legend"
     }
   }
@@ -125,7 +125,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
     SymbolFound<-TRUE
   }
   #Collecting the expresion and factor data
-  data<-getIsoData(d=x, isoforms=isos, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  data<-getIsoData(d=x, isoforms=isos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
 
   #Convert isoforms as a percentage of gene expression.
   if(asPercentage==TRUE & SymbolFound==TRUE) {
@@ -135,7 +135,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
     names(gexprs)<-uniGenes
     for(cgene in uniGenes) {
       cisos<-showIsoforms(x,genes=cgene,annotation = FALSE)
-      cDat<-getIsoData(d=x, isoforms=cisos, plotType=plotType, symbol=symbol,group=group, subGroup=subGroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+      cDat<-getIsoData(d=x, isoforms=cisos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
       if(length(cisos)==1) {
         gexprs[[cgene]]<-cDat$x
       } else {
@@ -178,7 +178,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
   #and if there are isoforms from more than one gene present, we will add a gene symbol factor level automatically
   if(SymbolFound==TRUE){
     iso2gene<-showIsoforms(x, isoforms = isos, symbol=symbol, annotation = symbol)
-    if(length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subGroup)))>=1 & grepl("bar",plotType,ignore.case = TRUE) & isoStack==TRUE) {
+    if(length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subgroup)))>=1 & grepl("bar",plotType,ignore.case = TRUE) & isoStack==TRUE) {
       if("isoforms" %in% colnames(data$by) ){
         geneFact<-iso2gene[data$by$isoforms]
         if(sum(data$by$group =="data" | is.na(data$by$group)) == length(data$by$group)){
@@ -186,9 +186,9 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
         } else {
           data$by <- data.frame(geneFact,data$by)
         }
-        subGroup<-TRUE
+        subgroup<-TRUE
       }
-    } else if (length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subGroup)))==2) {
+    } else if (length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subgroup)))==2) {
       geneData<-data.frame(data$x,data$by) %>%
         gather(key="isoforms",value="exprs",colnames(data$x)) %>%
         select("isoforms", colnames(data$by),"exprs")
@@ -200,15 +200,15 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
       } else {
         data$by <- data.frame(geneFact,geneData[,seq_len(dim(geneData)[2]-1)])
       }
-      subGroup<-TRUE
+      subgroup<-TRUE
     }
   }
 
   #Now we convert the options to boolean TRUE/FALSE for compatibility with NicePlots
-  if(is.null(subGroup)){
-    subGroup<-FALSE
+  if(is.null(subgroup)){
+    subgroup<-FALSE
   } else {
-    subGroup<-TRUE
+    subgroup<-TRUE
   }
   if(is.null(highlight)){
     highlight<-FALSE
@@ -216,23 +216,23 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
     highlight<-TRUE
   }
 
-  if(!is.vector(data$x) & (!is.null(group) | !is.null(subGroup))) {
-    subGroup<-TRUE
+  if(!is.vector(data$x) & (!is.null(group) | !is.null(subgroup))) {
+    subgroup<-TRUE
   }
-  if(is.null(group) & subGroup==TRUE) {
-    subGroup<-FALSE
+  if(is.null(group) & subgroup==TRUE) {
+    subgroup<-FALSE
   }
   if(plotType[1]=="density" & !is.null(group)) {
-    subGroup<-TRUE
+    subgroup<-TRUE
   }
 
   #Formatting options and adding new data
-  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subGroup=subGroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
+  npOptions<-append(list(x=data$x,by=data$by,pointHighlights=highlight,flipFacts=groupByGene, subgroup=subgroup, facet=facet,stack=stack, na.rm=na.rm,main=main, legend=legend),npOptions)
   if(groupByGene==TRUE & data$NullNames==TRUE) {
     if(is.factor(data$by)) {
-      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by)))))
+      npOptions<-append(npOptions,list(subgroupLabels=rep("",length(levels(data$by)))))
     } else {
-      npOptions<-append(npOptions,list(subGroupLabels=rep("",length(levels(data$by[,1])))))
+      npOptions<-append(npOptions,list(subgroupLabels=rep("",length(levels(data$by[,1])))))
     }
   }
   #Calling NicePlots
