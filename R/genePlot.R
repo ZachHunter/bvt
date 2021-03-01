@@ -14,7 +14,7 @@
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 #' \code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 #' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
-#' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. Oh and hey Nick, this ones for you!
+#' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
