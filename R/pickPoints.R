@@ -16,14 +16,31 @@
 #' @importFrom NicePlots setAlpha basicTheme
 #' @importFrom graphics points
 #' @seealso \code{\link[bvt]{genePlot}}
-pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selectLineCol=setAlpha("darkgoldenrod1"),selectSize=1.5) {
+pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),selectLineCol=setAlpha("darkgoldenrod1",0.9),selectSize=1.5) {
   if(requireNamespace("shiny",quietly = TRUE) & requireNamespace("miniUI",quietly = TRUE) == FALSE){
     stop("Missing required libraries for interactive shiny UI. Please install shiny and miniUI.")
   }
+  tFact<-1
+  dfilter<- seq(nrow(data$options$x)) %in% data$options$xypos$ID
+  if(data$options$pointHighlights==FALSE) {
+    tFact<-factor(rep("Group 1",length(unique(data$options$xypos$ID))))
+    levels(tFact)<-c("Group 1", "Group 2")
+  } else {
+    if(is.vector(data$options$by)) {
+      tFact<-factor(data$options$by[dfilter])
+    } else {
+      if(data$options$subgroup==TRUE) {
+        tFact<-factor(data$options$by[dfilter,min(3,ncol(data$options$by))])
+      } else {
+        tFact<-factor(data$options$by[dfilter,min(3,ncol(data$options$by))])
+      }
+    }
+  }
+
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(paste("Select points")),
     miniUI::miniContentPanel(padding = 0,
-      shiny::plotOutput("plot1", height = "100%", brush = "brush", click="plot_click")
+      shiny::plotOutput("plot1", height = "100%", brush = "brush", hover = "hover", click="plot_click")
     ),
     miniUI::miniContentPanel(padding = 0, style="background-color: #BEBEBE33",
       shiny::fillRow(height = "65px",flex=c(1,2,2,2),
@@ -34,13 +51,13 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selec
           shiny::actionButton("Select",label="Select",icon=shiny::icon("check-circle"),width="95%")
         ),
         shiny::fillCol(
-          shiny::selectInput("groupLevels",label="Select Level",choices = c("Group A", "Group B"), selected="Group A",width="95%")
+          shiny::selectInput("groupLevels",label="Select Level",choices = if(any(as.character(tFact) != "Group 1")){tFact}else{c("Group 1", "Group 2")}, selected=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])}else{"Group 2"},width="95%")
         ),
         shiny::fillCol(
-          shiny::textInput("groupNames", label="Level Name", value = "Group A",width="95%")
+          shiny::textInput("groupNames", label="Level Name", value=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])} else {"Group 2"}, width="95%")
         )
       ),
-      shiny::fillRow(flex=c(1,2,2,2),
+      shiny::fillRow(height = "65px",flex=c(1,2,2,2),
         shiny::fillCol(style = "margin-top: 25px;",
           shiny::br()
         ),
@@ -53,12 +70,19 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selec
         shiny::fillCol(
           shiny::actionButton("delGroup",label="Remove Level",icon=shiny::icon("trash-alt"),width="95%")
         )
-      ),
-      miniUI::miniContentPanel(padding = 0,
+      )
+    ),
+    miniUI::miniContentPanel(padding=0,
+      shiny::h4("Data Point Inspector"),
+      shiny::fillRow(height = "40px",
         shiny::fillCol(
-          shiny::fillRow(
-            shiny::tableOutput("descriptive")
-          )
+          shiny::textOutput("Inspector")
+        )
+      ),
+      shiny::h4("Factor Summary Table"),
+      shiny::fillRow(style="background-color: #FFFFFFFF",flex=1,
+        shiny::fillCol(
+          shiny::tableOutput("FactorStats")
         )
       )
     )
@@ -68,23 +92,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selec
     #shiny::reactiveValues(pGroup=rep("A",nrow(data$options$xypos)), selected=rep(FALSE,nrow(data$options$xypos)))
     pointGroup<-shiny::reactiveValues()
     pointGroup$selected<-rep(FALSE,nrow(data$options$xypos))
-    dfilter<- seq(nrow(data$options$x) %in% data$options$xypos$ID)
-    if(data$options$pointHighlights==FALSE) {
-      tFact<-factor(rep("Group 1",length(unique(data$options$xypos$ID))))
-      levels(tFact)<-c("Group 1", "Group 2")
-      pointGroup$pGroup<-tFact
-    } else {
-      if(is.vector(data$options$by)) {
-        pointGroup$pGroup<-data$options$by[dfilter]
-      } else {
-        if(data$options$subgroup==TRUE) {
-          pointGroup$pGroup<-data$options$by[dfilter,min(3,ncol(data$options$by))]
-        } else {
-          pointGroup$pGroup<-data$options$by[dfilter,min(2,ncol(data$options$by))]
-        }
-      }
-    }
-    #updateSelectInput(session, inputId = "groupLevels",choices = levels(pointGroup$pGroup), selected = levels(pointGroup$pGroup[1]))
+    pointGroup$pGroup<-tFact
 
     brushed<-shiny::reactive({
       bpoints<-shiny::brushedPoints(data$options$xypos, xvar = "x", yvar="y", input$brush, allRows = TRUE)$selected_
@@ -102,13 +110,40 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selec
       }
     })
 
+    shiny::observe({
+      input$hover
+      npoint<-shiny::nearPoints(data$options$xypos,  xvar = "x", yvar="y", allRows=T, coordinfo=input$hover,maxpoints=1)$selected_
+      if(!is.null(npoint)){
+        IDpos<-as.numeric(data$options$xypos$ID[npoint])
+        ID<-data$options$xypos$ID[npoint]
+        if(!is.null(rownames(data$options$x))){
+          ID<-rownames(data$options$x)[IDpos]
+        }
+        value<-if(is.vector(data$options$x)){
+            paste0("Expression = ", data$options$x[IDpos])
+          } else {
+            paste(colnames(data$options$x), round(data$options$x[IDpos,],4), sep=" = ", collapse=", ")
+          }
+        output$Inspector<-shiny::renderText(paste0("ID = ",ID,", Group = ",as.character(pointGroup$pGroup)[IDpos],", ",value))
+      }
+    })
+
     output$plot1<-shiny::renderPlot({
-      genePlot(data,pointSize=0, RSOveride=TRUE)
+      genePlot(data,pointSize=0, RSOveride=TRUE, highlight = pointGroup$pGroup, legend="Legend")
       points(data$options$xypos[,1:2], pch=16, col=data$options$theme$plotColors$points[rep(pointGroup$pGroup,nrow(data$options$xypos)/length(pointGroup$pGroup))])
       bIDs<-brushed()
       bSelected<-data$options$xypos$ID %in% bIDs
       points(data$options$xypos[pointGroup$selected | bSelected,1:2], bg=selectLineCol,col=selectFillCol,pch=21, cex=selectSize)
     })
+
+    output$FactorStats<-shiny::renderTable(
+      bind_cols(data$options$x, factor=data$options$by,Group=pointGroup$pGroup) %>%
+        pivot_longer(cols=if(is.vector(data$options$x)){1}else{seq(ncol(data$options$x))}, names_to = "Feature",values_to="Expression") %>%
+        group_by(Group,Feature) %>%
+        summarize(N=n(),Median_Expression=paste0(round(median(Expression),3)," (",round(min(Expression),3), "-",round(max(Expression),3),")"), .groups = 'drop') %>%
+        ungroup() %>%
+        spread(key=Feature,value=Median_Expression)
+    )
 
     shiny::observeEvent(input$clearSelection, {
       pointGroup$selected <- rep(FALSE,nrow(data$options$xypos))
@@ -127,11 +162,13 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold"),selec
     shiny::observeEvent(input$groupNames, {
       newName<-shiny::renderText(input$groupNames)
       oldName<-shiny::renderText(input$groupLevels)
-      if(newName() != oldName()) {
-        cLab<-levels(pointGroup$pGroup)
-        cLab[which(cLab==oldName())]<-newName()
-        levels(pointGroup$pGroup)<-cLab
-        shiny::updateSelectInput(session,inputId = "groupLevels", choices=levels(pointGroup$pGroup),selected = newName())
+      if(!is.null(newName())) {
+        if(newName() != oldName() & newName() != "" & !newName() %in% levels(pointGroup$pGroup) ) {
+          cLab<-levels(pointGroup$pGroup)
+          cLab[which(cLab==oldName())]<-newName()
+          levels(pointGroup$pGroup)<-cLab
+          shiny::updateSelectInput(session,inputId = "groupLevels", choices=levels(pointGroup$pGroup),selected = newName())
+        }
       }
     })
 
