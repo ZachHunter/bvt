@@ -7,8 +7,8 @@
 pick_points(
   data,
   dataTable = NULL,
-  selectFillCol = setAlpha("gold"),
-  selectLineCol = setAlpha("darkgoldenrod1"),
+  selectFillCol = setAlpha("gold", 0.6),
+  selectLineCol = setAlpha("darkgoldenrod1", 0.9),
   selectSize = 1.5
 )
 }
@@ -27,10 +27,20 @@ pick_points(
 A Shiny Widget to Inspect Points and Define Groups in Existing bvt and NicePlots Graphs
 }
 \details{
-Todo<-1
+The pick_points function provides a shiny based interactive environment to inspect data points on a graph
+and create new factors based on selected data. A basic data summary table is provided that updates as data
+points are assigned to different factor levels. Useful for exploratory data analysis and quality assurance checks.
+Any saved plot with drawn point generated with \code{bvt} or \code{NicePlots} can be used with this interface.
 }
 \examples{
-ToDo<-1
+data(iris)
+a<-genePlot(t(iris[,1:4]), group=iris$Species)
+#Note that devtools::check()  has issues shiny gadget returns
+#newFactor is being assigned to Species just to let it compile
+newFactor<-iris$Species
+#newFactor<-pick_points(a)
+summary(newFactor)
+pairwise.wilcox.test(iris[,2],newFactor)
 
 }
 \seealso{
