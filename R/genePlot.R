@@ -128,7 +128,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   }
   Tester<-1
   #Collecting the expression and factor data based on data type
-  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts, assatType=npOptions$assayType)
   #Note this use of an alternative environment is due to some weird issues seen in RStudio with plotType take on strange values.
   #Unclear if this helped but left in place for now.
   assign("PT",plotType, envir = testenv)

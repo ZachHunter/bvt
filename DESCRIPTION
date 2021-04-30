@@ -2,9 +2,9 @@ Package: bvt
 Type: Package
 Title: Visualization Tools for Bioconductor
 Version: 0.1.0
-Author@R: person("Zachary", "Hunter", email = "zhunter7@gmail.com",
+Author: person("Zachary", "Hunter", email = "zhunter7@gmail.com",
                   role = c("aut", "cre"))
-Maintainer: The package maintainer <zachary_hunter@dfci.harvardedu>
+Maintainer: The package maintainer <zachary_hunter@dfci.harvard.edu>
 Description: The Bing Center/Bioconductor/Bioinformatic Visualization Tools (BVT) package is a collection of easy to use plotting tools that work with a wide variety of Bioconductor data sets. The bvt package is built on top of the NicePlots package with the goal of making exploratory data analysis accessible to a broader audience. The goal is to provide a simple to use multiomic visualization tools usable to test hypothesis and concepts. Part of this effort includes some limited shiny and rgl support for a more interactive/tactile experience in desired. The inaccessibility of large bioinformatic data sets can be a real stumbling block biologists without extensive training in R or Bioconductor. Allowing easy to use tools makes visualizing pathways and connections between data available to non-specialist researchers. It also provides tools to make routine visualization quicker and easier those already comfortable working with this type of data allowing them to focus their energies elsewhere.
      All major functions rely on S3 variants to extend their functionality into multiple classes used in Bioconductor with common processing steps handled in the defaults methods. This allows for the functions to be easily extendible to new objects/classes as needed. While extensive customization is possible and pleasing aesthetics is part of the goal, the purpose of these tools is more rapid visualization and hypothesis generation more than making publication quality figures. It is also important to note that working closely with a bioinformatician or data scientists is critical for accurate interpretation of the data and these tools are no substitute for that.
 License: MIT + file LICENSE

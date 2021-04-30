@@ -27,8 +27,9 @@
 #' @importFrom graphics points
 #' @importFrom stats median
 #' @importFrom magrittr %>%
-#' @importFrom dplyr group_by summarize bind_cols n ungroup
+#' @importFrom dplyr group_by summarize bind_cols n ungroup filter
 #' @importFrom tidyr pivot_longer spread
+#' @importFrom purrr map_dbl
 #' @importFrom rlang .data
 #' @export
 #' @seealso \code{\link[bvt]{genePlot}}
@@ -152,18 +153,19 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
 
   #Begin reactive server section
   server<-function(input, output, session) {
-    #The point group variable sill track selected and assigned data points
+    #The point group variable will track selected and assigned data points
     pointGroup<-shiny::reactiveValues()
     pointGroup$selected<-rep(FALSE,nrow(data$options$xypos))
     pointGroup$pGroup<-tFact
+    pointGroup$cHighlight<-1
 
-    #Reactive brush object. Reterns selected samples when brushed() is called.
+    #Reactive brush object. Returns selected samples when brushed() is called.
     brushed<-shiny::reactive({
       bpoints<-shiny::brushedPoints(data$options$xypos, xvar = "x", yvar="y", input$brush, allRows = TRUE)$selected_
       sIDS<-unlist(unique(data$options$xypos$ID[bpoints]))
     })
 
-    #Sets of an ective observer for plot clicks allowing them to toggle the selection status of a point
+    #Sets of an active observer for plot clicks allowing them to toggle the selection status of a point
     #This is tracked by pointGroup$selected
     shiny::observe({
       input$plot_click
@@ -197,23 +199,32 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
 
     #plot rendering instructions
     output$plot1<-shiny::renderPlot({
-      if(data$plotType=="scatter") {
-        geneScatter(data,pointSize=0, RSOveride=TRUE, color = pointGroup$pGroup, legend="Legend")
+      if(is.vector(data$options$x)){
+        cHighlight<-rep(NA,length(data$options$x))
       } else {
-        genePlot(data,pointSize=0, RSOveride=TRUE, highlight = pointGroup$pGroup, legend="Legend")
+        cHighlight<-rep(NA,nrow(data$options$x))
       }
-      points(data$options$xypos[,1:2], pch=16, col=data$options$theme$plotColors$points[rep(pointGroup$pGroup,nrow(data$options$xypos)/length(pointGroup$pGroup))])
+      cHighlight[dfilter]<- as.character(pointGroup$pGroup)
+      cHighlight<-factor(cHighlight, levels=levels(pointGroup$pGroup))
+      pointGroup$cHighlight<-cHighlight
+      if(data$plotType=="scatter") {
+        geneScatter(data,pointSize=0, RSOveride=TRUE, color = cHighlight, legend="Legend")
+      } else {
+        genePlot(data,pointSize=0, RSOveride=TRUE, highlight = cHighlight, legend="Legend")
+      }
       bIDs<-brushed()
       bSelected<-data$options$xypos$ID %in% bIDs
+      points(data$options$xypos[,1:2], pch=16, col=data$options$theme$plotColors$points[cHighlight[dfilter]])
       points(data$options$xypos[pointGroup$selected | bSelected,1:2], bg=selectLineCol,col=selectFillCol,pch=21, cex=selectSize)
     })
 
     #Render data summary table based on user defined groups
     output$FactorStats<-shiny::renderTable(
-      bind_cols(data$options$x, factor=data$options$by,Group=pointGroup$pGroup) %>%
+      bind_cols(data$options$x, factor=data$options$by,Group=pointGroup$cHighlight) %>%
+        filter(!is.na(.data$Group)) %>%
         pivot_longer(cols=if(is.vector(data$options$x)){1}else{seq(ncol(data$options$x))}, names_to = "Feature",values_to="Expression") %>%
         group_by(.data$Group,.data$Feature) %>%
-        summarize(N=n(),Median_Expression=paste0(round(median(.data$Expression),3)," (",round(min(.data$Expression),3), "-",round(max(.data$Expression),3),")"), .groups = 'drop') %>%
+        summarize(N=n(),Median_Expression=paste0(round(median(.data$Expression,na.rm=TRUE),3)," (",round(min(.data$Expression,na.rm=TRUE),3), "-",round(max(.data$Expression,na.rm=TRUE),3),")"), .groups = 'drop') %>%
         ungroup() %>%
         spread(key=.data$Feature,value=.data$Median_Expression)
     )
@@ -260,8 +271,14 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
     shiny::observeEvent(input$addToGroup, {
       cLevel<-shiny::renderText(input$groupLevels)
       bIDs<-brushed()
-      bSelected<-data$options$xypos$ID %in% bIDs
-      pointGroup$pGroup[unique(data$options$xypos$ID[bSelected | pointGroup$selected])]<-cLevel()
+      bSelected<-as.character(data$options$xypos$ID) %in% as.character(bIDs)
+      filter<-bSelected | pointGroup$selected
+      filter<-map_dbl(unique(data$options$xypos$ID[filter]),function(x) min(grep(x,data$options$xypos$ID)))
+      newFactor<-as.character(pointGroup$pGroup)
+      newFactor[filter]<-cLevel()
+      newLevels<-levels(pointGroup$pGroup)
+      if(! cLevel() %in% newLevels) {newLevels<-c(newLevels,cLevel())}
+      pointGroup$pGroup<-factor(newFactor,levels=newLevels)
       pointGroup$selected <- rep(FALSE,nrow(data$options$xypos))
     })
 
@@ -286,7 +303,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
 
     #Returns the user defined vector
     shiny::observeEvent(input$done, {
-      shiny::stopApp(returnValue = invisible(pointGroup$pGroup))
+      shiny::stopApp(returnValue = invisible(pointGroup$cHighlight))
     })
   }
   viewer<-shiny::dialogViewer(dialogName = "Interactive Data Inpector and Factor Creator",height = 2000)
