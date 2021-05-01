@@ -80,6 +80,7 @@ Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{
 All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
 Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{DBA}} objects, the \code{assayType} argument can be added to specify which assay to use if
 multiple options are available.
+
 }
 \examples{
 #While designed for use with bioconductor datasets,
