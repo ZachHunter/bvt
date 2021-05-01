@@ -326,7 +326,18 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subg
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
     stack<-colData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
+  geneList<-NULL
+  if(!is.null(rowData(x))) {
+    if(sum(grepl(symbol,colnames(rowData(x))))>0) {
+      geneList<-as.character(rowData(x)[,grep(symbol,colnames(rowData(x)))[1]])
+    }
+    geneList<-c(geneList,rownames(assay(x)))
+  }
+  factorList<-NULL
+  if(!is.null(colData(x))) {
+    factorList<-colnames(colData(x))
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE,factorList=factorList,geneList=geneList),gdOptions)
   do.call("getGeneData", gdOptions)
 }
 
@@ -382,9 +393,19 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
   if(!is.null(stack) & length(stack)==1 & any(stack %in% colnames(colData(x)))) {
     stack<-colData(x)[,stack[1]]
   }
-  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE),gdOptions)
+  geneList<-NULL
+  if(!is.null(rowData(x))) {
+    if(sum(grepl(symbol,colnames(rowData(x))))>0) {
+      geneList<-as.character(rowData(x)[,grep(symbol,colnames(rowData(x)))[1]])
+    }
+    geneList<-c(geneList,rownames(assay(x)))
+  }
+  factorList<-NULL
+  if(!is.null(colData(x))) {
+    factorList<-colnames(colData(x))
+  }
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack, rawData=FALSE,factorList=factorList,geneList=geneList),gdOptions)
   do.call("getGeneData", gdOptions)
-
 }
 
 #' @importClassesFrom limma EList
@@ -462,3 +483,22 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subgroup=NULL
   do.call("getGeneData", gdOptions)
 }
 
+#' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom SummarizedExperiment assay assays colData rowData
+getGeneData.DBA <- function(x, gene, plotType="box", group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, symbol="GeneSymbol", useNormCounts=TRUE, ...) {
+  gdOptions<-list(...)
+  if(requireNamespace("DiffBind",quietly = TRUE) & requireNamespace("colourpicker",quietly = TRUE) & requireNamespace("miniUI",quietly = TRUE) == FALSE){
+    stop("The Bioconductor package DiffBind must be installed for bvt to use DBA class objects. Please install and try again.")
+  }
+  data<-DiffBind::dba(x,bSummarizedExperiment = T)
+  if(!is.null(gdOptions$assayType) & sum(names(assays(data)) %in% gdOptions$assayType) > 0){
+    SummarizedExperiment::assays(data)<-SummarizedExperiment::assays(data)[gdOptions$assayType]
+  } else if (useNormCounts==TRUE) {
+    SummarizedExperiment::assays(data)<-SummarizedExperiment::assays(data)["RPKM"]
+  } else {
+    SummarizedExperiment::assays(data)<-SummarizedExperiment::assays(data)["Reads"]
+  }
+  SummarizedExperiment::rowData(data)<-x$merged
+  gdOptions<-append(list(x=data,gene=gene,plotType=plotType,group=group,subgroup=subgroup,highlight=highlight,facet=facet,stack=stack),gdOptions)
+  do.call("getGeneData", gdOptions)
+}

@@ -11,10 +11,11 @@
 #' One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 #' The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 #' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
-#' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
+#' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, \code{DiffBind} \code{\link[DiffBind]{DBA}} objects, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 #' \code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 #' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
-#' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
+#' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{DBA}} objects, the \code{assayType} argument can be added to specify which assay to use if
+#' multiple options are available.
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well.
 #' @param gene character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.
@@ -128,7 +129,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   }
   Tester<-1
   #Collecting the expression and factor data based on data type
-  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts, assatType=npOptions$assayType)
   #Note this use of an alternative environment is due to some weird issues seen in RStudio with plotType take on strange values.
   #Unclear if this helped but left in place for now.
   assign("PT",plotType, envir = testenv)
