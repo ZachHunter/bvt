@@ -102,10 +102,8 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(paste("Select points")),
     miniUI::miniContentPanel(padding = 0,
-      shiny::plotOutput("plot1", height = "100%", brush = "brush", hover = "hover", click="plot_click")
-    ),
-    miniUI::miniContentPanel(padding = 0, style="background-color: #BEBEBE33",
-      shiny::fillRow(height = "65px",flex=c(1,2,2,2),
+      shiny::uiOutput("UIplot1"),
+      shiny::fillRow(height = "65px", style = "background-color:#BEBEBE33;",flex=c(1,2,2,2),
         shiny::fillCol(style = "margin-top: 25px;",
           shiny::actionButton("clearSelection",label="Clear",icon=shiny::icon("ban"),width="95%")
         ),
@@ -119,7 +117,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
           shiny::textInput("groupNames", label="Level Name", value=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])} else {"Group 2"}, width="95%")
         )
       ),
-      shiny::fillRow(height = "65px",flex=c(1,2,2,2),
+      shiny::fillRow(height = "65px", style = "background-color:#BEBEBE33;",flex=c(1,2,2,2),
         shiny::fillCol(style = "margin-top: 25px;",
           shiny::br()
         ),
@@ -132,9 +130,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
         shiny::fillCol(
           shiny::actionButton("delGroup",label="Remove Level",icon=shiny::icon("trash-alt"),width="95%")
         )
-      )
-    ),
-    miniUI::miniContentPanel(padding=0,
+      ),
       shiny::h4("Data Point Inspector"),
       shiny::fillRow(height = "40px",
         shiny::fillCol(
@@ -216,6 +212,15 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
       bSelected<-data$options$xypos$ID %in% bIDs
       points(data$options$xypos[,1:2], pch=16, col=data$options$theme$plotColors$points[cHighlight[dfilter]])
       points(data$options$xypos[pointGroup$selected | bSelected,1:2], bg=selectLineCol,col=selectFillCol,pch=21, cex=selectSize)
+    }
+    )
+
+    #By wrapping the plot element in a renderUI, it helps it conform to the natural plot size.
+    #This helped keep plots from appearing too squished.
+    output$UIplot1 <- shiny::renderUI({
+      plotOutput("plot1",
+        width="100%",
+        brush = "brush", hover = "hover", click="plot_click")
     })
 
     #Render data summary table based on user defined groups
