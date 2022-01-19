@@ -114,7 +114,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
           shiny::selectInput("groupLevels",label="Select Level",choices = if(any(as.character(tFact) != "Group 1")){tFact}else{c("Group 1", "Group 2")}, selected=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])}else{"Group 2"},width="95%")
         ),
         shiny::fillCol(
-          shiny::textInput("groupNames", label="Level Name", value=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])} else {"Group 2"}, width="95%")
+          shiny::textInput("groupLabels", label="Level Name", value=if(any(as.character(tFact) != "Group 1")){as.character(tFact[1])} else {"Group 2"}, width="95%")
         )
       ),
       shiny::fillRow(height = "65px", style = "background-color:#BEBEBE33;",flex=c(1,2,2,2),
@@ -204,9 +204,9 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
       cHighlight<-factor(cHighlight, levels=levels(pointGroup$pGroup))
       pointGroup$cHighlight<-cHighlight
       if(data$plotType=="scatter") {
-        geneScatter(data,pointSize=0, RSOveride=TRUE, color = cHighlight, legend="Legend")
+        geneScatter(data,pointSize=0, RSOverride=TRUE, color = cHighlight, legend="Legend")
       } else {
-        genePlot(data,pointSize=0, RSOveride=TRUE, highlight = cHighlight, legend="Legend")
+        genePlot(data,pointSize=0, RSOverride=TRUE, highlight = cHighlight, legend="Legend")
       }
       bIDs<-brushed()
       bSelected<-data$options$xypos$ID %in% bIDs
@@ -249,12 +249,12 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
     #Pull down of available group levels. Selects which level is currently active
     shiny::observeEvent(input$groupLevels, {
       cSel<-shiny::renderText(input$groupLevels)
-      shiny::updateTextInput(session,inputId = "groupNames", val=cSel())
+      shiny::updateTextInput(session,inputId = "groupLabels", val=cSel())
     })
 
     #Name of selected group level. Changing the text changes the level name
-    shiny::observeEvent(input$groupNames, {
-      newName<-shiny::renderText(input$groupNames)
+    shiny::observeEvent(input$groupLabels, {
+      newName<-shiny::renderText(input$groupLabels)
       oldName<-shiny::renderText(input$groupLevels)
       if(!is.null(newName())) {
         if(newName() != oldName() & newName() != "" & !newName() %in% levels(pointGroup$pGroup) ) {

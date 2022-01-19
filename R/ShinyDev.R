@@ -151,8 +151,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
               shiny::checkboxInput("rotateY", label = "Rotate Data Labels", value = if(is.null(gpOptions$rotateY)){FALSE} else {if(gpOptions$rotateY==TRUE){TRUE}else{FALSE}},width="95%")
             ),
             shiny::fillRow(
-              shiny::textInput("groupNames",value=if(is.null(gpOptions$groupNames)){NULL}else if (gpOptions$groupNames==""){NULL} else {paste0(gpOptions$groupNames, collapse = ",")}, label="Group Labels",width="95%"),
-              shiny::textInput("subgroupNames",label="Subgroup Labels",value=if(is.null(gpOptions$subgroupNames)){NULL}else if (gpOptions$subgroupNames==""){NULL} else {paste0(gpOptions$subgroupNames, collapse = ", ")},width="95%"),
+              shiny::textInput("groupLabels",value=if(is.null(gpOptions$groupLabels)){NULL}else if (gpOptions$groupLabels==""){NULL} else {paste0(gpOptions$groupLabels, collapse = ",")}, label="Group Labels",width="95%"),
+              shiny::textInput("subgroupLabels",label="Subgroup Labels",value=if(is.null(gpOptions$subgroupLabels)){NULL}else if (gpOptions$subgroupLabels==""){NULL} else {paste0(gpOptions$subgroupLabels, collapse = ", ")},width="95%"),
               shiny::checkboxInput("rotateLabels", label = "Rotate Group Labels",value=if(is.null(gpOptions$rotateLabels)){FALSE} else {if(gpOptions$rotateLabels==TRUE){TRUE}else{FALSE}}, width="95%")
             )
           ),
@@ -397,14 +397,14 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
 
 
   #This is the beginning or the server sections where the reactive values and element response code resides
-  #RSOveride is a element that stores the npData output from the plot preview and the command line code
+  #RSOverride is a element that stores the npData output from the plot preview and the command line code
   #needed to generate the plot. The plotOptions reactive value is a list of all current settings and is the variable
   #UI elements update based on user input. The plotOptions settings are then passed to genePlot to create the
-  #plot preview and the output is stored in RSOveride as previously mentioned.
+  #plot preview and the output is stored in RSOverride as previously mentioned.
   #
   #The following sections examines each UI element to update the vcommond list variable. Unlike plot options which
   #stores all current settings, this tries to contain only minimal set of options to generate the current code.
-  #This is used to generate the code equivalent example in the advanced tab and is stored in RSOveride to be returned
+  #This is used to generate the code equivalent example in the advanced tab and is stored in RSOverride to be returned
   #to genePlot for use in non-RStudio environments (graphic output weirdness RStudio prevents direct plotting from the shiny app for some reason.)
   #The final section is all of the UI observation code to respond to the user and update plotOptions. The gpOptions
   #variable is used to remember the initial settings for initial defaults and also options reset.
@@ -416,7 +416,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     cTheme<-"basicTheme"
     PS<-"BP"
     #vcommand<-shiny::reactiveValues(x=dbName)
-    RSOveride<-shiny::reactiveValues(rso=TRUE, npData=NULL, options=NULL)
+    RSOverride<-shiny::reactiveValues(rso=TRUE, npData=NULL, options=NULL)
     shiny::isolate(
       plotOptions<-shiny::reactiveValues(gene=gpOptions$gene,
                                 group=if(is.null(gpOptions$group)){NULL}else{gpOptions$group},
@@ -480,7 +480,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       )
 
       output$plot1 <- shiny::renderPlot({
-      RSOveride$npData<-genePlot(data,
+      RSOverride$npData<-genePlot(data,
                                  gene=plotOptions$gene,
                                  group=plotOptions$group,
                                  subgroup=plotOptions$subgroup,
@@ -490,7 +490,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  drawPoints=plotOptions$drawPoints,
                                  legend=plotOptions$legend,
                                  pointMethod=plotOptions$pointMethod,
-                                 RSOveride=RSOveride$rso,
+                                 RSOverride=RSOverride$rso,
                                  theme=get(plotOptions$theme),
                                  normalize=plotOptions$asPercentage,
                                  groupByGene=plotOptions$groupByGene,
@@ -503,7 +503,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
                                  expLabels=plotOptions$expLabels,
                                  rotateY=plotOptions$rotateY,
                                  rotateLabels=plotOptions$rotateLabels,
-                                 groupNames=plotOptions$groupNames,
+                                 groupLabels=plotOptions$groupLabels,
                                  subgroupLabels=plotOptions$subgroupLabels,
                                  minorTick=plotOptions$minorTick,
                                  guides=plotOptions$guides,
@@ -714,9 +714,9 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       if(plotOptions$rotateLabels==TRUE) {
         vcommand$rotateLabels<-plotOptions$rotateLabels
       }
-      if(!is.null(plotOptions$groupNames[1])) {
-        if(plotOptions$groupNames[1]!="") {
-          vcommand$groupNames<-plotOptions$groupNames
+      if(!is.null(plotOptions$groupLabels[1])) {
+        if(plotOptions$groupLabels[1]!="") {
+          vcommand$groupLabels<-plotOptions$groupLabels
         }
       }
       if(!is.null(plotOptions$subgroupLabels[1])){
@@ -754,7 +754,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
           }
         }
       }
-      # RSOveride$options<-vcommand
+      # RSOverride$options<-vcommand
       if(plotOptions$plotType[1]=="surface") {
         if(!is.null(plotOptions$theta)) {
           vcommand$theta<-plotOptions$theta
@@ -915,7 +915,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
         vcommand$xLim<-plotOptions$xLim
       }
 
-      #RSOveride=RSOveride$rso,
+      #RSOverride=RSOverride$rso,
 
       if(!is.null(plotOptions$bandwidth)){
         if(plotOptions$plotType[1] =="violin" | plotOptions$plotType[1] =="density" | plotOptions$plotType[1] =="surface") {
@@ -997,16 +997,16 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       if(gpOptions$useNormCounts==FALSE) {
         vcommand$useNormCounts<-FALSE
       }
-      RSOveride$options<-vcommand
+      RSOverride$options<-vcommand
 
-      #This needs to change after the first pass. RSOveride set to TRUE nukes the graphics environment.
+      #This needs to change after the first pass. RSOverride set to TRUE nukes the graphics environment.
       #if RStudio is being used to prevent ghost like over ploting issues caused by it refusing update
       #Within the shiny widget it needs to be run on the first pass only.
-      if(RSOveride$rso==TRUE) {
-        RSOveride$rso<-FALSE
+      if(RSOverride$rso==TRUE) {
+        RSOverride$rso<-FALSE
       }
-      output$descriptive<-shiny::renderTable(RSOveride$npData$summary)
-      output$Statistics<-shiny::renderText(RSOveride$npData$stats)
+      output$descriptive<-shiny::renderTable(RSOverride$npData$summary)
+      output$Statistics<-shiny::renderText(RSOverride$npData$stats)
       output$codeExample<-shiny::renderText(paste0("genePlot(",paste(names(vcommand),vcommand,sep="=",collapse = ", "),")"),quoted = FALSE)
     })
 
@@ -1064,7 +1064,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     })
 
     shiny::observeEvent(input$groupFactorSelector, {
-      if(!is.null(shiny::req( {input$groupFactorSelector })) & RSOveride$rso==FALSE) {
+      if(!is.null(shiny::req( {input$groupFactorSelector })) & RSOverride$rso==FALSE) {
         shiny::updateTextInput(session, "group", value = input$groupFactorSelector )
       }
     })
@@ -1085,7 +1085,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     })
 
     shiny::observeEvent(input$subgroupFactorSelector, {
-      if(!is.null(shiny::req( {input$subgroupFactorSelector })) & RSOveride$rso==FALSE) {
+      if(!is.null(shiny::req( {input$subgroupFactorSelector })) & RSOverride$rso==FALSE) {
         shiny::updateTextInput(session, "subgroup", value = input$subgroupFactorSelector )
       }
     })
@@ -1111,7 +1111,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     })
 
     shiny::observeEvent(input$highlightFactorSelector, {
-      if(!is.null(shiny::req( {input$highlightFactorSelector })) & RSOveride$rso==FALSE) {
+      if(!is.null(shiny::req( {input$highlightFactorSelector })) & RSOverride$rso==FALSE) {
         shiny::updateTextInput(session, "highlight", value = input$highlightFactorSelector )
       }
     })
@@ -1136,7 +1136,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
     })
 
     shiny::observeEvent(input$stackFactorSelector, {
-      if(!is.null(shiny::req( {input$stackFactorSelector })) & RSOveride$rso==FALSE) {
+      if(!is.null(shiny::req( {input$stackFactorSelector })) & RSOverride$rso==FALSE) {
         shiny::updateTextInput(session, "stack", value = input$stackFactorSelector )
       }
     })
@@ -1173,7 +1173,7 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
 
     shiny::observeEvent(input$plotType, {
       pt<-shiny::renderText({input$plotType})
-      RSOveride$rso<-TRUE
+      RSOverride$rso<-TRUE
 
       preVal<-shiny::renderText(input$axisPrepend)
       aVal<-shiny::renderText(input$axisAppend)
@@ -1454,21 +1454,21 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       plotOptions$rotateY<-input$rotateY
     })
 
-    shiny:: observeEvent(input$groupNames, {
-      groupNamesVal <- shiny::renderText( {input$groupNames} )
-      if(is.null(groupNamesVal()) | groupNamesVal() == "" ){
-        plotOptions$groupNames<-NULL
+    shiny:: observeEvent(input$groupLabels, {
+      groupLabelsVal <- shiny::renderText( {input$groupLabels} )
+      if(is.null(groupLabelsVal()) | groupLabelsVal() == "" ){
+        plotOptions$groupLabels<-NULL
       } else {
-        plotOptions$groupNames<-trimws(unlist(strsplit(groupNamesVal(),",")))
+        plotOptions$groupLabels<-trimws(unlist(strsplit(groupLabelsVal(),",")))
       }
     })
 
-    shiny::observeEvent(input$subgroupNames, {
-      subgroupNamesVal <- shiny::renderText( {input$subgroupNames} )
-      if(is.null(subgroupNamesVal()) | subgroupNamesVal() == "" ){
+    shiny::observeEvent(input$subgroupLabels, {
+      subgroupLabelsVal <- shiny::renderText( {input$subgroupLabels} )
+      if(is.null(subgroupLabelsVal()) | subgroupLabelsVal() == "" ){
         plotOptions$subgroupLabels<-NULL
       } else {
-        plotOptions$subgroupLabels<-trimws(unlist(strsplit(subgroupNamesVal(),",")))
+        plotOptions$subgroupLabels<-trimws(unlist(strsplit(subgroupLabelsVal(),",")))
       }
     })
 
@@ -2101,8 +2101,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
 
     #Lower Button Panel
     shiny::observeEvent(input$done, {
-      vcomList<-shiny::reactiveValuesToList(RSOveride)
-      vcomList$options<-vcomList$options[names(vcomList$options)!="RSOveride"]
+      vcomList<-shiny::reactiveValuesToList(RSOverride)
+      vcomList$options<-vcomList$options[names(vcomList$options)!="RSOverride"]
       #vcomList<-vcomList$options
       shiny::stopApp(returnValue = vcomList)
     })
@@ -2129,8 +2129,8 @@ shinyGenePlot <- function(data, geneList, factorList, gpOptions,dbName="data",th
       shiny::updateTextInput(session, "ylab", value = if(is.null(gpOptions$ylab)){""}else if (gpOptions$ylab==""){""} else {gpOptions$ylab})
       shiny::updateTextInput(session, "subtitle",  value = if(is.null(gpOptions$subtitle)){""}else if (gpOptions$subtitle==""){""} else {gpOptions$subtitle})
       shiny::updateCheckboxInput(session, "rotateY", value = if(is.null(gpOptions$rotateY)){FALSE} else {if(gpOptions$rotateY==TRUE){TRUE}else{FALSE}})
-      shiny::updateTextInput(session, "groupNames", value=if(is.null(gpOptions$groupNames)){""}else if (gpOptions$groupNames==""){} else {paste0(gpOptions$groupNames, collapse = ",")})
-      shiny::updateTextInput(session, "subgroupNames", value=if(is.null(gpOptions$subgroupNames)){""}else if (gpOptions$subgroupNames==""){""} else {paste0(gpOptions$subgroupNames, collapse = ", ")})
+      shiny::updateTextInput(session, "groupLabels", value=if(is.null(gpOptions$groupLabels)){""}else if (gpOptions$groupLabels==""){} else {paste0(gpOptions$groupLabels, collapse = ",")})
+      shiny::updateTextInput(session, "subgroupLabels", value=if(is.null(gpOptions$subgroupLabels)){""}else if (gpOptions$subgroupLabels==""){""} else {paste0(gpOptions$subgroupLabels, collapse = ", ")})
       shiny::updateCheckboxInput(session, "rotateLabels", value=if(is.null(gpOptions$rotateLabels)){FALSE} else {if(gpOptions$rotateLabels==TRUE){TRUE}else{FALSE}})
       shiny::updateNumericInput(session, "minorTick", value=if(!is.null(gpOptions$minorTick)){as.numeric(gpOptions$minorTick)} else if(gpOptions$logScale==FALSE) {as.numeric(iTheme$minorTick)}else{as.numeric(iTheme$minorTickLS)})
       shiny::updateCheckboxInput(session, "showMinorGuide",value = if(is.null(gpOptions$minorGuides)){if(is.null(gpOptions$guides)){iTheme$guides}else{gpOptions$guides}}else{gpOptions$minorGuides})

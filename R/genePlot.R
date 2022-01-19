@@ -165,7 +165,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     #Run Shiny Widget
     dataOut<-shinyGenePlot(data=x, geneList=data$geneList, factorList=data$factorList, gpOptions=shinyOpts, dbName=deparse(substitute(x)),themeName=deparse(substitute(theme)))
     #If RStudio is being used just return the npData object as ploting seems to cause issues.
-    dataOut$options<-dataOut$options[names(dataOut$options)!="RSOveride"]
+    dataOut$options<-dataOut$options[names(dataOut$options)!="RSOverride"]
     if(Sys.getenv("RSTUDIO") == "1") {
       return(dataOut$npData)
     }
