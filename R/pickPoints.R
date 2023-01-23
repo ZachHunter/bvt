@@ -218,7 +218,7 @@ pick_points <- function(data,dataTable=NULL,selectFillCol=setAlpha("gold",0.6),s
     #By wrapping the plot element in a renderUI, it helps it conform to the natural plot size.
     #This helped keep plots from appearing too squished.
     output$UIplot1 <- shiny::renderUI({
-      plotOutput("plot1",
+      shiny::plotOutput("plot1",
         width="100%",
         brush = "brush", hover = "hover", click="plot_click")
     })

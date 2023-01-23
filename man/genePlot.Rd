@@ -75,12 +75,11 @@ If character values are given for factor input, \code{genePlot} will attempt to 
 One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
-Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, \code{DiffBind} \code{\link[DiffBind]{DBA}} objects, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
+Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, \code{DiffBind} \code{\link[DiffBind]{dba}} objects, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 \code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
 All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
-Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{DBA}} objects, the \code{assayType} argument can be added to specify which assay to use if
+Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{dba}} objects, the \code{assayType} argument can be added to specify which assay to use if
 multiple options are available.
-
 }
 \examples{
 #While designed for use with bioconductor datasets,
