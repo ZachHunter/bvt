@@ -178,7 +178,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
   #and if there are isoforms from more than one gene present, we will add a gene symbol factor level automatically
   if(SymbolFound==TRUE){
     iso2gene<-showIsoforms(x, isoforms = isos, symbol=symbol, annotation = symbol)
-    if(length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subgroup)))>=1 & grepl("bar",plotType,ignore.case = TRUE) & isoStack==TRUE) {
+    if(length(unique(iso2gene))>1 & sum(c(is.null(group[1]),is.null(subgroup[1])))>=1 & grepl("bar",plotType[1],ignore.case = TRUE) & isoStack==TRUE) {
       if("isoforms" %in% colnames(data$by) ){
         geneFact<-iso2gene[data$by$isoforms]
         if(sum(data$by$group =="data" | is.na(data$by$group)) == length(data$by$group)){
@@ -188,7 +188,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
         }
         subgroup<-TRUE
       }
-    } else if (length(unique(iso2gene))>1 & sum(c(is.null(group),is.null(subgroup)))==2) {
+    } else if (length(unique(iso2gene))>1 & sum(c(is.null(group[1]),is.null(subgroup[1])))==2) {
       geneData<-data.frame(data$x,data$by) %>%
         gather(key="isoforms",value="exprs",colnames(data$x)) %>%
         select("isoforms", colnames(data$by),"exprs")
