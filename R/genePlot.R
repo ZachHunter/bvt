@@ -2,10 +2,11 @@
 #' @description Visualize gene expression data for exploratory data analysis
 #'
 #' @details
-#' The \code{genePlot} is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
-#' The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to type.
-#' The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
-#' If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
+#' The \code{genePlot} function is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
+#' The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to input data type.
+#' The factors allow for splitting expression data from one or more genes into groups and for various plot types with data point overlays where points can be colored by factors levels as well.
+#' If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated
+#' feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 #' If no matches are found the row names of are checked of the expression data are check for matches as well.
 #' If character values are given for factor input, \code{genePlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{genePlot} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
@@ -750,11 +751,11 @@ NULL
 #' has a length equal to or greater than the number of factor levels. For \code{highlight} and \code{stack}, where alternating colors may be
 #' critical to the plot and where "points" or "fill" are of length one, respectively, BVT will automatically check to see if "fill", "points", or "lines"
 #' are length greater than one and will use the those colors as an alternative, only when "highlight" or "stack" is active.
-#' Finally, the \code{\link[NicePlots]{setAlpha}} function provides a convenient way to assign a alpha transparency value to any valid R color including
+#' Finally, the \code{\link[NicePlots]{setAlpha}} function provides a convenient way to assign an alpha transparency value to any valid R color including
 #' named colors such as "steelblue" or "purple". Below is a list of all the valid \code{plotColors} settings:
 #' \describe{
 #'   \item{\code{bg}}{Sets the color of the plotting area or canvas. Must be of length 1. Setting this to "open" will make a transparent background
-#'   with out the full bounding box (i.e. only the axes are draw.)}
+#'   with out the full bounding box (i.e. only the axes are drawn.)}
 #'   \item{\code{marginBg}}{Sets the background color for the margins around the the plotting area were the axis labels, titles, etc. are drawn.
 #'   Must be length 1. Note that if "bg" is set to "open", this will set the background for the entire plot.}
 #'   \item{\code{guides}}{Color of the guide lines corresponding to the major tick marks. Providing more than one color will cause the guides

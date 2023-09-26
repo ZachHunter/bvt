@@ -5,7 +5,7 @@
 #' Details will be forthcoming. Makes a 2D or 3D scatter plot.
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other data types as well including \code{\link{matrix}} and \code{\link{data.frame}}.
-#' @param genes character vector; Names of genes or or phenotype data that can be coerced into numerics.
+#' @param genes character vector; Names of genes or or phenotype data that can be coerced into a numeric vector.
 #' @param color vector/character; Should either be factor of values used to color points or the name of a gene/phenotype that can be used to construct one.
 #' @param shape vector/character; Should either be factor of values used to control the shape (i.e. \code{pty}) of points or the name of a gene/phenotype that can be used to construct one.
 #' @param size vector/character; Should either be factor of values used to control the shape (i.e. \code{pty}) of points or the name of a gene/phenotype that can be used to construct one.
@@ -19,7 +19,7 @@
 #' @param useNormCounts logical; By default \code{geneScatter} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.
 #' @param ... Any valid bvt plotting parameter that can be found in \code{\link{bvt_graphic_options}}.
 #'
-#' @return an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
+#' @return A list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
 #' #While bioinformatic data sets are the intended use case, bvt functions can be used with as regular

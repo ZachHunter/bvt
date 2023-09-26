@@ -60,7 +60,7 @@ genePlot(
 \item{...}{Any parameter recognized by \code{NicePlots} functions. A complete list of these options can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
+A list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize gene expression data for exploratory data analysis
