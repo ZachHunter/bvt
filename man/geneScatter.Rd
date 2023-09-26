@@ -46,12 +46,12 @@ geneScatter(
 
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
-\item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
+\item{useNormCounts}{logical; By default \code{geneScatter} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.}
 
-\item{...}{Any parameter recognized by \code{NicePlots} functions.}
+\item{...}{Any valid bvt plotting parameter that can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
+an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize gene expression data in 1, 2, and 3 dimension scatter/waterfall plots for exploratory data analysis.

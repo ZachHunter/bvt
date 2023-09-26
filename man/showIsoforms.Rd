@@ -47,7 +47,7 @@ The isoforms can be selected by name and/or by thier association with a particul
 If nothing else is specified, only the isoform IDs are returned. Isoforms can be filtered by \code{appris} or \code{transcriptType}.
 If the \code{appris} option is set to \code{\link{TRUE}}, only isoforms with some type of appris annotation will be returned.
 If it is set to a charater string such as 'principal', it will only return isoforms where that value is a substring of the appris tag.
-The appris ID collumn, if it exisits, is identified by looking for 'appris' (case insensitive) in the annotation collumn names.
+The appris ID collumn, if it exisits, is identified by looking for 'appris' (case insensitive) in the annotation column names.
 The other filter, \code{transcriptType}, returns only those isoforms where the transcript type tag contains the value as a subtring.
 Finally, if \code{annotation} is set to \code{\link{TRUE}}, all annotation collumn are included with the output.
 If a character or numeric vector is supplies, they will be used to filter the columns.

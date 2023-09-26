@@ -16,10 +16,10 @@
 #' @param legend logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
-#' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
-#' @param ... Any parameter recognized by \code{NicePlots} functions.
+#' @param useNormCounts logical; By default \code{geneScatter} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.
+#' @param ... Any valid bvt plotting parameter that can be found in \code{\link{bvt_graphic_options}}.
 #'
-#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
+#' @return an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
 #' #While bioinformatic data sets are the intended use case, bvt functions can be used with as regular

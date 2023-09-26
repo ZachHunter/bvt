@@ -61,7 +61,7 @@ isoPlot(
 
 \item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
 
-\item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
+\item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.}
 
 \item{appris}{logical or character; If set to TRUE, will return only isoforms with appris annotation. If set to a character string, will restrict isoforms to those with the character value matching a substring of the appris tag. Appris column is determined by the first column name to containing 'Appris' (case insensitive).}
 
@@ -69,10 +69,10 @@ isoPlot(
 
 \item{ttype}{character; Column name of the optional transcript type column in the annotation. The default value is 'transcript_type'.}
 
-\item{...}{Any parameter recognized by \code{NicePlots} functions.}
+\item{...}{Any of the valid bvt graphics parameters which can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
+an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize isoform expression data for exploratory data analysis.
@@ -88,9 +88,10 @@ One can also pass raw data vectors/data frames and/or factors to \code{isoPlots}
 The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-\code{isoPlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
-All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
-Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
+\code{isoPlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+All \code{\link{npData}} objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
+Options passed to any of these, including \code{plotType} will override the options for the \code{\link{npData}} object. A complete list of bvt graphics options
+can be found in \code{\link{bvt_graphic_options}}.
 }
 \examples{
 ToDo<-1

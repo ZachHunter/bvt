@@ -55,12 +55,12 @@ genePlot(
 
 \item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
 
-\item{useNormCounts}{logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.}
+\item{useNormCounts}{logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.}
 
-\item{...}{Any parameter recognized by \code{NicePlots} functions.}
+\item{...}{Any parameter recognized by \code{NicePlots} functions. A complete list of these options can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
+an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize gene expression data for exploratory data analysis
@@ -72,13 +72,13 @@ The factors allow for splitting expression data from one or more genes into grou
 If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 If no matches are found the row names of are checked of the expression data are check for matches as well.
 If character values are given for factor input, \code{genePlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
-One can also pass raw data vectors/data frames and/or factors to \code{genePlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
+One can also pass raw data vectors/data frames and/or factors to \code{genePlot} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
 The \code{genePlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, \code{DiffBind} \code{\link[DiffBind]{dba}} objects, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-\code{genePlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
-All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
-Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{dba}} objects, the \code{assayType} argument can be added to specify which assay to use if
+\code{genePlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+All \code{\link{npData}} objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{genePlot} or any of the \code{NicePlots} functions.
+Options passed to any of these, including \code{plotType} will override the options for the \code{\link{npData}} object. For \code{\link[SummarizedExperiment]{SummarizedExperiment}} and \code{DiffBind} \code{\link[DiffBind]{dba}} objects, the \code{assayType} argument can be added to specify which assay to use if
 multiple options are available.
 }
 \examples{

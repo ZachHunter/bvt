@@ -12,9 +12,10 @@
 #' The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
 #' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
-#' \code{isoPlot} silently returns a list of class \code{npData} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
-#' All npData objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
-#' Options passed to any of these, including \code{plotType} will override the options for the \code{npData} object.
+#' \code{isoPlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
+#' All \code{\link{npData}} objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
+#' Options passed to any of these, including \code{plotType} will override the options for the \code{\link{npData}} object. A complete list of bvt graphics options
+#' can be found in \code{\link{bvt_graphic_options}}.
 #'
 #' @param x R data object; Most typically this is an \code{ExpressionSet} there is support for other datatypes as well.
 #' @param isoforms character; Isoform IDs or a vector of isoform IDS to plot.
@@ -34,11 +35,11 @@
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
-#' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about useing non-normalized data.
+#' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.
 #' @param ttype character; Column name of the optional transcript type column in the annotation. The default value is 'transcript_type'.
-#' @param ... Any parameter recognized by \code{NicePlots} functions.
+#' @param ... Any of the valid bvt graphics parameters which can be found in \code{\link{bvt_graphic_options}}.
 #'
-#' @return an list of class \code{npData}. This contains data necessary to regenerate the plot as well as summary statistics.
+#' @return an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 #'
 #' @examples
 #' ToDo<-1
