@@ -72,15 +72,15 @@ isoPlot(
 \item{...}{Any of the valid bvt graphics parameters which can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
+A list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize isoform expression data for exploratory data analysis.
 }
 \details{
-The \code{isoPlot} is designed to make visualization of isoform expression data simple and easy for R novices and bioinformaticians alike.
-The function is an S3 generic that accept various R and Bioconductor data sets as input and extracts the expression, factor and annotation data from them according to type.
-The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays. Points can be colored by factors levels as well.
+The \code{isoPlot} function is designed to make visualization of isoform expression data simple and easy for R novices and bioinformaticians alike.
+The function is an S3 generic that accept various R and Bioconductor data sets as input and extracts the expression, factor and annotation data from them according to the input data type.
+The factors allow for splitting expression data from one or more genes into groups and for various plot types with data point overlays. Points can be colored by factors levels as well.
 If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{isoPlot} will attempt to look up the isoforms in the associated with the gene in the annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 If no matches are found the row names of are checked of the expression data are check for matches as well.
 If character values are given for factor input, \code{isoPlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
@@ -89,7 +89,7 @@ The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{Nice
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 \code{isoPlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
-All \code{\link{npData}} objects can be replotted using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
+All \code{\link{npData}} objects can be plotted again using  the \code{\link[graphics]{plot}} function, \code{isoPlot} or any of the \code{NicePlots} functions.
 Options passed to any of these, including \code{plotType} will override the options for the \code{\link{npData}} object. A complete list of bvt graphics options
 can be found in \code{\link{bvt_graphic_options}}.
 }

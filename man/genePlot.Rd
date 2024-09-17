@@ -60,16 +60,17 @@ genePlot(
 \item{...}{Any parameter recognized by \code{NicePlots} functions. A complete list of these options can be found in \code{\link{bvt_graphic_options}}.}
 }
 \value{
-A list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
+an list of class \code{\link{npData}}. This contains data necessary to regenerate the plot as well as summary statistics.
 }
 \description{
 Visualize gene expression data for exploratory data analysis
 }
 \details{
-The \code{genePlot} is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
-The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to type.
-The factors allow for splitting expression data from one or more genes into groups and for plot types with data point overlays, points can be colored by factors levels as well.
-If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
+The \code{genePlot} function is designed to make visualization of gene expression data simple and easy for R novices and bioinformaticians alike.
+The function is an S3 generic that accept various R and Bioconductor data sets as input and exacts the expression, factor and annotation data from them according to input data type.
+The factors allow for splitting expression data from one or more genes into groups and for various plot types with data point overlays where points can be colored by factors levels as well.
+If the input data is a Bioconductor data set such as an \code{\link[Biobase]{ExpressionSet}} and the \code{gene} option is used, \code{genePlot} will attempt to look up the genes in the associated
+feature annotation data (e.g. \code{\link[Biobase]{fData}}) according to the data input type and look for the gene symbol column indicated by the \code{symbol} option (defaults to 'GeneSymbol').
 If no matches are found the row names of are checked of the expression data are check for matches as well.
 If character values are given for factor input, \code{genePlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 One can also pass raw data vectors/data frames and/or factors to \code{genePlot} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
@@ -97,18 +98,19 @@ main="Distribution of Sepal Lengths by Species")
 
 #Plotting multiple columns:
 genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
-highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
+highlight=iris$Species, pointShape=c(16:18), pointSize=.9, main="Violins with Point Highlights")
 
 #Multiple columns with grouping factors:
-genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
+genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+main="Multi-Column Data With Grouping Factor")
 
 #Same with grouping order reversed
 genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
-groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
+groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE, main="Multi-Column Data With Grouping Factor")
 
 #2D distribution plotting
 genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
-group=iris$Species, theme=npGGTheme)
+group=iris$Species, theme=npGGTheme, main="2D Density Example")
 
 #Surface plotting of the above. Use rgl for interactive models.
 genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,

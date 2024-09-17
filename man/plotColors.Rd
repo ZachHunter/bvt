@@ -19,11 +19,11 @@ or \code{group} factor levels.). If a unique color is desired for each factor le
 has a length equal to or greater than the number of factor levels. For \code{highlight} and \code{stack}, where alternating colors may be
 critical to the plot and where "points" or "fill" are of length one, respectively, BVT will automatically check to see if "fill", "points", or "lines"
 are length greater than one and will use the those colors as an alternative, only when "highlight" or "stack" is active.
-Finally, the \code{\link[NicePlots]{setAlpha}} function provides a convenient way to assign a alpha transparency value to any valid R color including
+Finally, the \code{\link[NicePlots]{setAlpha}} function provides a convenient way to assign an alpha transparency value to any valid R color including
 named colors such as "steelblue" or "purple". Below is a list of all the valid \code{plotColors} settings:
 \describe{
   \item{\code{bg}}{Sets the color of the plotting area or canvas. Must be of length 1. Setting this to "open" will make a transparent background
-  with out the full bounding box (i.e. only the axes are draw.)}
+  with out the full bounding box (i.e. only the axes are drawn.)}
   \item{\code{marginBg}}{Sets the background color for the margins around the the plotting area were the axis labels, titles, etc. are drawn.
   Must be length 1. Note that if "bg" is set to "open", this will set the background for the entire plot.}
   \item{\code{guides}}{Color of the guide lines corresponding to the major tick marks. Providing more than one color will cause the guides

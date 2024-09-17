@@ -54,18 +54,19 @@
 #'
 #' #Plotting multiple columns:
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
-#' highlight=iris$Species, pointShape=c(16:18), pointSize=.9)
+#' highlight=iris$Species, pointShape=c(16:18), pointSize=.9, main="Violins with Point Highlights")
 #'
 #' #Multiple columns with grouping factors:
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species)
+#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+#' main="Multi-Column Data With Grouping Factor")
 #'
 #' #Same with grouping order reversed
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
-#' groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE)
+#' groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE, main="Multi-Column Data With Grouping Factor")
 #'
 #' #2D distribution plotting
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
-#' group=iris$Species, theme=npGGTheme)
+#' group=iris$Species, theme=npGGTheme, main="2D Density Example")
 #'
 #' #Surface plotting of the above. Use rgl for interactive models.
 #' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
