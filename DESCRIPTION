@@ -13,4 +13,4 @@ LazyData: true
 Depends: NicePlots,Biobase
 Imports: dplyr,tidyr,tibble,RColorBrewer,purrr,ggplot2,EDASeq,DESeq2,edgeR,limma,KernSmooth,beeswarm,boot,SummarizedExperiment,magrittr,rlang
 Suggests: shiny,rgl,miniUI,colourpicker,DiffBind
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

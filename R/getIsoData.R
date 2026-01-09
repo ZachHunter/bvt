@@ -169,6 +169,7 @@ showIsoforms.EList <- function(x, isoforms=NULL, genes=NULL,annotation=FALSE, ap
 #' @seealso \code{\link{isoPlot}} \code{\link{showIsoforms}} \code{\link{getGeneData}}
 getIsoData <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type",  ...) {UseMethod("getIsoData",d)}
 
+#' @exportS3Method
 getIsoData.default <- function(d,isoforms=NULL, plotType=plotType, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, useNormCounts=TRUE, appris=NULL,transcriptType=NULL,symbol="GeneSymbol",ttype="transcript_type", ...){
   idOptions<-list(...)
   if(is.vector(d) | is.factor(d)) {
