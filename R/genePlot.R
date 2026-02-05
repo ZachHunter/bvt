@@ -32,7 +32,8 @@
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to ploting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
-#' @param theme npTheme object; A valid npTheme object the controls default settings. Defaults to \code{basicTheme}.
+#' @param theme npTheme object; A valid npTheme object the controls default settings.
+#' @param isTidy logical; Transposes input data if set to \code{\link{TRUE}}. Biological expression data is often formatted with genes as rows and samples as columns which is the transpose of the more standard tidy data format. You can read more about tidy data at \code{vignette("tidy-data",package = "tidyr")}. Defaults to FALSE unless input data is a \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, or \code{\link[tibble]{tibble}}.
 #' @param useNormCounts logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.
 #' @param ... Any parameter recognized by \code{NicePlots} functions. A complete list of these options can be found in \code{\link{bvt_graphic_options}}.
 #'
@@ -53,44 +54,44 @@
 #' main="Distribution of Sepal Lengths by Species")
 #'
 #' #Plotting multiple columns:
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
+#' genePlot(iris[,1:4],gene=c("Sepal.Length","Petal.Length"), plotType="violin",
 #' highlight=iris$Species, pointShape=c(16:18), pointSize=.9, main="Violins with Point Highlights")
 #'
 #' #Multiple columns with grouping factors:
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+#' genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 #' main="Multi-Column Data With Grouping Factor")
 #'
 #' #Same with grouping order reversed
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+#' genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 #' groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE, main="Multi-Column Data With Grouping Factor")
 #'
 #' #2D distribution plotting
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
+#' genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="density",
 #' group=iris$Species, theme=npGGTheme, main="2D Density Example")
 #'
 #' #Surface plotting of the above. Use rgl for interactive models.
-#' genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
+#' genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
 #' useRgl=FALSE, theta=60, phi=30, theme=npGGTheme)
 #'
 #' @importFrom purrr map
+#' @importFrom NicePlots niceBox niceVio niceBar niceDensity basicTheme npDefaultTheme
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
+genePlot <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, theme=if(is.null(highlight)){npDefaultTheme}else{basicTheme}, shiny=FALSE, groupByGene=TRUE, isTidy=if(is.data.frame(x) | is.matrix(x)){TRUE}else{FALSE} ,useNormCounts=TRUE, ...) {UseMethod("genePlot",x)}
 
 #' @importFrom purrr map
-#' @importFrom NicePlots niceBox niceVio niceBar niceDensity
+#' @importFrom NicePlots niceBox niceVio niceBar niceDensity basicTheme npDefaultTheme
 #' @importFrom Biobase exprs pData fData
 #' @export
-
-genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), theme=basicTheme, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=TRUE, useNormCounts=TRUE, ...) {
+genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, theme=if(is.null(highlight)){npDefaultTheme}else{basicTheme}, shiny=FALSE, groupByGene=TRUE, isTidy=if(is.data.frame(x) | is.matrix(x)){TRUE}else{FALSE}, useNormCounts=TRUE, ...) {
   dataOut<-1
   npOptions<-list(...)
   testenv<-new.env()
   if(any(grepl("npTheme", class(theme)))) {
     npOptions$theme<-theme
   } else {
-    warning("Selected theme is not of class 'npTheme'. See help for more details. Proceeding with defaul settings...",call. = FALSE)
+    warning("Selected theme is not of class 'npTheme'. See help for more details. Proceeding with default settings...",call. = FALSE)
   }
   if(!is.null(npOptions$subtitle)) {
     npOptions$sub<-npOptions$subtitle
@@ -110,7 +111,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     stack<-NULL
   }
 
-  #Setting default title of nothing was given
+  #Setting default title if nothing was given
   if(main==TRUE) {
     if(length(gene)>1) {
       main<-paste0(c("Gene Expression:",paste0(gene,collapse=", ")),collapse=" ")
@@ -131,7 +132,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
   }
   Tester<-1
   #Collecting the expression and factor data based on data type
-  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts, assatType=npOptions$assayType)
+  data<-getGeneData(x=x, gene=gene, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts, assatType=npOptions$assayType, isTidy=isTidy)
   #Note this use of an alternative environment is due to some weird issues seen in RStudio with plotType take on strange values.
   #Unclear if this helped but left in place for now.
   assign("PT",plotType, envir = testenv)
@@ -181,7 +182,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
     } else {
       shinyPlotType<-newOptions$plotType
     }
-    data<-getGeneData(x=x, gene=newOptions$gene, plotType=shinyPlotType, symbol=symbol,group=newOptions$group, subgroup=newOptions$subgroup,highlight=newOptions$highlight,facet=newOptions$facet, stack=newOptions$stack, useNormCounts=useNormCounts)
+    data<-getGeneData(x=x, gene=newOptions$gene, plotType=shinyPlotType, symbol=symbol,group=newOptions$group, subgroup=newOptions$subgroup,highlight=newOptions$highlight,facet=newOptions$facet, stack=newOptions$stack, useNormCounts=useNormCounts, isTidy=isTidy)
 
     if(is.null(newOptions$main)==TRUE) {
       if(length(newOptions$gene)>1) {
@@ -290,7 +291,7 @@ genePlot.default <- function(x, gene=NULL, plotType=c("box","dot","bar","violin"
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-genePlot.npData<-function(x, gene=NULL, plotType=NULL,theme=basicTheme, ...) {
+genePlot.npData<-function(x, gene=NULL, plotType=NULL, ...) {
   #the big difference with the npData version of genePlot over the NicePlots equivalents is we are giving users the opportunity to add new factors to the npData object
   #With the generic plot version of npData, x and by are set but different options can be turned on and off
 
@@ -801,11 +802,11 @@ NULL
 #'   bg="lightgrey",
 #'   fill="white")
 #'
-#' genePlot(t(iris[,1:2]), group=iris$Species, plotColors=pcList, main="Color Example")
+#' genePlot(iris[,1:2], group=iris$Species, plotColors=pcList, main="Color Example")
 #'
 #' #Making a new theme based on npGGTheme
 #' customTheme<-newNPTheme(theme=npGGTheme, plotColors = pcList, errorBarLineType=1, fontFamily="sans")
-#' genePlot(t(iris[,1:2]), group=iris$Species, theme=customTheme, main="Theme Example")
+#' genePlot(iris[,1:2], group=iris$Species, theme=customTheme, main="Theme Example")
 #' npThemes()
 #'
 #' @seealso \code{\link{bvt_graphic_options}}, \code{\link{genePlot}}, \code{\link{isoPlot}}, \code{\link{geneScatter}}, \code{\link[NicePlots]{newNPTheme}}
@@ -854,7 +855,7 @@ NULL
 #' data(iris)
 #' #plotting a saved graph with different options
 #'
-#' a<-genePlot(t(iris[,1:4]), group=iris$Species, plotType="bar", main="npData Example")
+#' a<-genePlot(iris[,1:4], group=iris$Species, plotType="bar", main="npData Example")
 #' #Note that only the first two columns of data are used  below
 #' #as this is the maximum allowed for the \emph{density plots}.
 #' plot(a, plotType="density", theme=npColorTheme)
@@ -865,7 +866,7 @@ NULL
 #' stores<-factor(c("Store 1","Store 2","Store 3","Store 4"))
 #'
 #' #Transposition is necessary since expression data is typical the transpose of tidy data
-#' b<-genePlot(t(salesData), highlight=stores, plotType="dot",
+#' b<-genePlot(salesData, highlight=stores, plotType="dot",
 #'    theme=npGGTheme, pointLaneWidth=2,
 #'    plotColors=list(lines=setAlpha("black",.5)),
 #'    legendSize=1, main="Toy Sales Data",

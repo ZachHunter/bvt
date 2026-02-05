@@ -69,11 +69,11 @@ pcList<-list(
   bg="lightgrey",
   fill="white")
 
-genePlot(t(iris[,1:2]), group=iris$Species, plotColors=pcList, main="Color Example")
+genePlot(iris[,1:2], group=iris$Species, plotColors=pcList, main="Color Example")
 
 #Making a new theme based on npGGTheme
 customTheme<-newNPTheme(theme=npGGTheme, plotColors = pcList, errorBarLineType=1, fontFamily="sans")
-genePlot(t(iris[,1:2]), group=iris$Species, theme=customTheme, main="Theme Example")
+genePlot(iris[,1:2], group=iris$Species, theme=customTheme, main="Theme Example")
 npThemes()
 
 }

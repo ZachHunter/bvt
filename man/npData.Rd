@@ -47,7 +47,7 @@ systems. This can be useful when making custom modifications to a graph as shown
 data(iris)
 #plotting a saved graph with different options
 
-a<-genePlot(t(iris[,1:4]), group=iris$Species, plotType="bar", main="npData Example")
+a<-genePlot(iris[,1:4], group=iris$Species, plotType="bar", main="npData Example")
 #Note that only the first two columns of data are used  below
 #as this is the maximum allowed for the \emph{density plots}.
 plot(a, plotType="density", theme=npColorTheme)
@@ -58,7 +58,7 @@ salesData<-data.frame(Q1=c(1,4,2,2), Q2=c(2,3,4,2), Q3=c(4,4,2,3))
 stores<-factor(c("Store 1","Store 2","Store 3","Store 4"))
 
 #Transposition is necessary since expression data is typical the transpose of tidy data
-b<-genePlot(t(salesData), highlight=stores, plotType="dot",
+b<-genePlot(salesData, highlight=stores, plotType="dot",
    theme=npGGTheme, pointLaneWidth=2,
    plotColors=list(lines=setAlpha("black",.5)),
    legendSize=1, main="Toy Sales Data",

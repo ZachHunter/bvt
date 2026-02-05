@@ -19,8 +19,18 @@ isoPlot(
   highlight = NULL,
   facet = NULL,
   stack = NULL,
+  theme = if (is.null(highlight)) {
+     npDefaultTheme
+ } else {
+     basicTheme
+ },
   shiny = FALSE,
   groupByGene = FALSE,
+  isTidy = if (is.data.frame(x) | is.matrix(x)) {
+     TRUE
+ } else {
+     FALSE
+ },
   useNormCounts = TRUE,
   appris = FALSE,
   transcriptType = FALSE,
@@ -57,9 +67,13 @@ isoPlot(
 
 \item{stack}{factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.}
 
+\item{theme}{npTheme object; A valid npTheme object the controls default settings.}
+
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
 \item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
+
+\item{isTidy}{logical; Transposes input data if set to \code{\link{TRUE}}. Biological expression data is often formatted with genes as rows and samples as columns which is the transpose of the more standard tidy data format. You can read more about tidy data at \code{vignette("tidy-data",package = "tidyr")}. Defaults to FALSE unless input data is a \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, or \code{\link[tibble]{tibble}}.}
 
 \item{useNormCounts}{logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.}
 
@@ -85,7 +99,7 @@ If the input data is a Bioconductor data set such as an \code{\link[Biobase]{Exp
 If no matches are found the row names of are checked of the expression data are check for matches as well.
 If character values are given for factor input, \code{isoPlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 One can also pass raw data vectors/data frames and/or factors to \code{isoPlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
-The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
+The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 \code{isoPlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.

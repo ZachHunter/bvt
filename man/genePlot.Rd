@@ -8,7 +8,6 @@ genePlot(
   x,
   gene = NULL,
   plotType = c("box", "dot", "bar", "violin", "density", "surface"),
-  theme = basicTheme,
   symbol = "GeneSymbol",
   legend = NULL,
   main = TRUE,
@@ -18,8 +17,18 @@ genePlot(
   highlight = NULL,
   facet = NULL,
   stack = NULL,
+  theme = if (is.null(highlight)) {
+     npDefaultTheme
+ } else {
+     basicTheme
+ },
   shiny = FALSE,
   groupByGene = TRUE,
+  isTidy = if (is.data.frame(x) | is.matrix(x)) {
+     TRUE
+ } else {
+     FALSE
+ },
   useNormCounts = TRUE,
   ...
 )
@@ -30,8 +39,6 @@ genePlot(
 \item{gene}{character; Gene or vector of gene names. These can either be rownames from the gene expression data or looked up in the feature data.}
 
 \item{plotType}{character; Can be set to "box", "violin, "dot", "bar", "density" or "surface" for boxplots, violin plots, dot plots, bar plots, and kernel density plots, respectively.}
-
-\item{theme}{npTheme object; A valid npTheme object the controls default settings. Defaults to \code{basicTheme}.}
 
 \item{symbol}{character; Column name of of gene symbols in the feature data of \code{x} (\code{fData}).}
 
@@ -51,9 +58,13 @@ genePlot(
 
 \item{stack}{factor or name of factor to be extracted from \code{x} (e.g. \code{\link[Biobase]{pData}}). Used for stacked bar plots where both the individual and aggregate values are important. Valid only for bar plots.}
 
+\item{theme}{npTheme object; A valid npTheme object the controls default settings.}
+
 \item{shiny}{logical; Use \code{\link[shiny]{shiny}} interfaces if available.}
 
 \item{groupByGene}{logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}}
+
+\item{isTidy}{logical; Transposes input data if set to \code{\link{TRUE}}. Biological expression data is often formatted with genes as rows and samples as columns which is the transpose of the more standard tidy data format. You can read more about tidy data at \code{vignette("tidy-data",package = "tidyr")}. Defaults to FALSE unless input data is a \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, or \code{\link[tibble]{tibble}}.}
 
 \item{useNormCounts}{logical; By default \code{genePlot} will try to use \code{normCounts()} instead of \code{counts()} in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.}
 
@@ -97,23 +108,23 @@ genePlot(iris$Sepal.Length,gene=NA, group=iris$Species, plotType="density",
 main="Distribution of Sepal Lengths by Species")
 
 #Plotting multiple columns:
-genePlot(t(iris[,1:4]),gene=c("Sepal.Length","Petal.Length"), plotType="violin",
+genePlot(iris[,1:4],gene=c("Sepal.Length","Petal.Length"), plotType="violin",
 highlight=iris$Species, pointShape=c(16:18), pointSize=.9, main="Violins with Point Highlights")
 
 #Multiple columns with grouping factors:
-genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 main="Multi-Column Data With Grouping Factor")
 
 #Same with grouping order reversed
-genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
+genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="bar", group=iris$Species,
 groupByGene=FALSE, theme=npColorTheme, errFun="t95ci", legend=TRUE, main="Multi-Column Data With Grouping Factor")
 
 #2D distribution plotting
-genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="density",
+genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="density",
 group=iris$Species, theme=npGGTheme, main="2D Density Example")
 
 #Surface plotting of the above. Use rgl for interactive models.
-genePlot(t(iris[,1:4]),gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
+genePlot(iris[,1:4],gene=c("Sepal.Width","Petal.Width"), plotType="surface", legend=TRUE,
 useRgl=FALSE, theta=60, phi=30, theme=npGGTheme)
 
 }

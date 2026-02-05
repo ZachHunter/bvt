@@ -50,10 +50,18 @@ getGeneData.default <- function(x, gene=NULL, plotType="box", group=NULL, subgro
       x<-as.data.frame(x)
       dataLength<-dim(x)[1]
       if(!is.null(gene)){
-        if(sum(gene %in% rownames(x)) == length(gene)) {
-          x<-x[gene,]
+        if(!is.null(activeOptions$isTidy) & activeOptions$isTidy==TRUE) {
+          if(sum(gene %in% colnames(x)) == length(gene)) {
+            x<-x[,gene]
+          } else {
+            stop(paste0("Genes ", paste0(gene[! gene %in% colnames(x)],collapse=", "), " not found in the colnames of the data."),call. =FALSE)
+          }
         } else {
-          stop(paste0("Some of the genes: ", paste0(gene,collapse=", "), " not found in the rownames of the data."),call. =FALSE)
+         if(sum(gene %in% rownames(x)) == length(gene)) {
+            x<-x[gene,]
+          } else {
+            stop(paste0("Genes ", paste0(gene[! gene %in% rownames(x)],collapse=", "), " not found in the rownames of the data."),call. =FALSE)
+          }
         }
       }
       if(is.data.frame(x)){
@@ -79,8 +87,13 @@ getGeneData.default <- function(x, gene=NULL, plotType="box", group=NULL, subgro
   #since this is the generic catch all, lets try to standardize the input types.
   if(is.list(x) | is_tibble(x)) {x<-as.data.frame(x)}
   if(is.data.frame(x)){x<-as.matrix(x)}
+
   #Checking to make sure inputs are sane, first in the case of a matrix, then in the case of a vector.
   if(is.matrix(x)) {
+
+    #Checking for isTidy flag to see if the data should be transposed
+    if(!is.null(activeOptions$isTidy) & activeOptions$isTidy==TRUE) {x<-t(x)}
+
     sampleN<-dim(x)[1]
     #subgrouping is not possible if multiple genes have been selected.
     if(dim(x)[2]>1 & !is.null(subgroup)) {

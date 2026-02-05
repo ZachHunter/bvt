@@ -15,7 +15,7 @@
 #'
 #' @examples
 #' data(iris)
-#' a<-genePlot(t(iris[,1:4]), group=iris$Species)
+#' a<-genePlot(iris[,1:4], group=iris$Species)
 #' #Note that devtools::check()  has issues shiny gadget returns
 #' #newFactor is being assigned to Species just to let it compile
 #' newFactor<-iris$Species

@@ -9,7 +9,7 @@
 #' If no matches are found the row names of are checked of the expression data are check for matches as well.
 #' If character values are given for factor input, \code{isoPlot} will attempt to look up associated phenotype data (e.g. \code{\link[Biobase]{pData}}).
 #' One can also pass raw data vectors/data frames and/or factors to \code{isoPlots} to bypass this feature, which is critical for data sets and data formats where integrated phenotype and feature data is not available.
-#' The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjuction with options detailed below.
+#' The \code{isoPlot} uses the \code{NicePlots} graphics library and any \code{NicePlots} option and/or theme can be used in conjunction with options detailed below.
 #' The \code{plotType} options supported correspond to \code{NicePlots} functions and include box plots (\code{\link[NicePlots]{niceBox}}), dot plots (\code{\link[NicePlots]{niceDots}}), violin plots (\code{\link[NicePlots]{niceVio}}), bar plots (\code{\link[NicePlots]{niceBar}}) as well as both one/two dimensional kernel density plots (\code{\link[NicePlots]{niceDensity}}).
 #' Supported data input types include: \code{\link[Biobase]{ExpressionSet}}, \code{\link[EDASeq]{SeqExpressionSet-class}}, \code{\link[limma]{EList-class}}, \code{\link[DESeq2]{DESeqTransform}}, as well as standard R data types such as \code{\link[base]{vector}}, \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, and \code{\link[tibble]{tibble}}.
 #' \code{isoPlot} silently returns a list of class \code{\link{npData}} that contains a summarized findings, p-values (if indicated), extracted plotting data, and plotting options.
@@ -34,7 +34,9 @@
 #' @param legend logical or character; Draws a figure legend. Use to set the legend title which defaults to "Legend" if equals \code{\link{TRUE}}. Set to \code{\link{FALSE}} to disable.
 #' @param na.rm logical; Removes \code{\link{NA}} values prior to plotting.
 #' @param shiny logical; Use \code{\link[shiny]{shiny}} interfaces if available.
+#' @param theme npTheme object; A valid npTheme object the controls default settings.
 #' @param groupByGene logical; If more then one gene is listed and \code{grouByGene} is \code{TRUE}
+#' @param isTidy logical; Transposes input data if set to \code{\link{TRUE}}. Biological expression data is often formatted with genes as rows and samples as columns which is the transpose of the more standard tidy data format. You can read more about tidy data at \code{vignette("tidy-data",package = "tidyr")}. Defaults to FALSE unless input data is a \code{\link[base]{matrix}}, \code{\link[base]{data.frame}}, or \code{\link[tibble]{tibble}}.
 #' @param useNormCounts logical; By default \code{genePlot} will try to use normCounts instead of counts in \code{SeqExpressionSets}. Set to FALSE to use raw counts instead, though this will generate a warning about using non-normalized data.
 #' @param ttype character; Column name of the optional transcript type column in the annotation. The default value is 'transcript_type'.
 #' @param ... Any of the valid bvt graphics parameters which can be found in \code{\link{bvt_graphic_options}}.
@@ -51,7 +53,7 @@
 #' @importFrom Biobase exprs pData fData
 #' @export
 #' @seealso \code{\link{genePlot}}, \code{\link{showIsoforms}}, \code{\link[NicePlots]{niceBox}}, \code{\link[NicePlots]{niceVio}}, \code{\link[NicePlots]{niceBar}}, \code{\link[NicePlots]{niceDots}}, \code{\link[NicePlots]{niceDensity}}
-isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
+isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol",legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=NULL, theme=if(is.null(highlight)){npDefaultTheme}else{basicTheme}, shiny=FALSE, groupByGene=FALSE, isTidy=if(is.data.frame(x) | is.matrix(x)){TRUE}else{FALSE}, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type",...) {UseMethod("isoPlot",x)}
 
 #' @importFrom purrr map
 #' @importFrom tidyr gather
@@ -60,9 +62,14 @@ isoPlot <- function(x, isoforms=NULL, gene=NULL, plotType=c("box","dot","bar","v
 #' @importFrom NicePlots niceBox niceVio niceBar niceDensity
 #' @importFrom Biobase exprs pData fData
 #' @export
-isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot","box","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=TRUE, shiny=FALSE, groupByGene=FALSE, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
+isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot","box","violin","density","surface"), asPercentage=FALSE, symbol="GeneSymbol", legend=NULL, main=TRUE, na.rm=TRUE, group=NULL, subgroup=NULL, highlight=NULL, facet=NULL, stack=TRUE, theme=if(is.null(highlight)){npDefaultTheme}else{basicTheme}, shiny=FALSE, groupByGene=FALSE, isTidy=if(is.data.frame(x) | is.matrix(x)){TRUE}else{FALSE}, useNormCounts=TRUE, appris=FALSE, transcriptType=FALSE, ttype="transcript_type", ...) {
 
   npOptions<-list(...)
+  if(any(grepl("npTheme", class(theme)))) {
+    npOptions$theme<-theme
+  } else {
+    warning("Selected theme is not of class 'npTheme'. See help for more details. Proceeding with default settings...",call. = FALSE)
+  }
   #First lets handle the case that someone set something to FALSE or NA instead of just leaving it as NULL
 
   if(sum(isoforms==FALSE)==1 | sum(is.na(isoforms))==1) {isoforms<-NULL}
