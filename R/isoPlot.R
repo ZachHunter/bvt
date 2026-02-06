@@ -133,7 +133,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
     SymbolFound<-TRUE
   }
   #Collecting the expresion and factor data
-  data<-getIsoData(d=x, isoforms=isos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+  data<-getIsoData(d=x, isoforms=isos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, isTidy=isTidy, useNormCounts=useNormCounts)
 
   #Convert isoforms as a percentage of gene expression.
   if(asPercentage==TRUE & SymbolFound==TRUE) {
@@ -143,7 +143,7 @@ isoPlot.default <- function(x, isoforms=NULL, gene=NULL, plotType=c("bar","dot",
     names(gexprs)<-uniGenes
     for(cgene in uniGenes) {
       cisos<-showIsoforms(x,genes=cgene,annotation = FALSE)
-      cDat<-getIsoData(d=x, isoforms=cisos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, useNormCounts=useNormCounts)
+      cDat<-getIsoData(d=x, isoforms=cisos, plotType=plotType, symbol=symbol,group=group, subgroup=subgroup,highlight=highlight,facet=facet, stack=stack, isTidy=isTidy, useNormCounts=useNormCounts)
       if(length(cisos)==1) {
         gexprs[[cgene]]<-cDat$x
       } else {
