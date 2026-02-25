@@ -2,7 +2,7 @@
 % Please edit documentation in R/getGeneData.R
 \name{getGeneData}
 \alias{getGeneData}
-\title{Retieve Gene Expression and Factor Data}
+\title{Retrieve Gene Expression and Factor Data}
 \usage{
 getGeneData(
   x,

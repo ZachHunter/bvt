@@ -6,7 +6,7 @@
 # ExpessionSet, SeqExpressionSet, DESeqTransform, SummarizedExperiment, EList
 
 
-#' @title Retieve Gene Expression and Factor Data
+#' @title Retrieve Gene Expression and Factor Data
 #' @description Returns selected gene expression and factor data based on data type.
 #'
 #' @details
@@ -150,10 +150,10 @@ getGeneData.ExpressionSet <- function(x, gene, plotType="box", group=NULL, subgr
     geneList<-unlist(unique(as.character(fData(x)[,symbol])))
     if(sum(gene %in% fData(x)[,symbol])>0) {
       if(length(gene)>1) {
-        data<-map(gene, function(g) exprs(x)[fData(x)[,symbol]==g,]) %>% as.data.frame()
+        data<-map(gene, function(g) exprs(x)[fData(x)[,symbol]==g & !is.na(fData(x)[,symbol]),]) %>% as.data.frame()
         colnames(data)<-gene
       } else {
-        data<-exprs(x)[which(fData(x)[,symbol]==gene),]
+        data<-exprs(x)[which(fData(x)[,symbol]==gene & !is.na(fData(x)[,symbol])),]
       }
     } else if(sum(gene %in% rownames(exprs(x)))>0) {
       if(length(gene)>1) {
@@ -219,16 +219,16 @@ getGeneData.SeqExpressionSet <- function(x, gene, plotType="box", group=NULL, su
     if(sum(gene %in% fData(x)[,symbol])>0) {
       if(length(gene)>1) {
         if(useNormCounts==TRUE) {
-          data<-map(gene, function(g) normCounts(x)[fData(x)[,symbol]==g,]) %>% as.data.frame()
+          data<-map(gene, function(g) normCounts(x)[fData(x)[,symbol]==g & !is.na(fData(x)[,symbol]),]) %>% as.data.frame()
         } else {
-          data<-map(gene, function(g) counts(x)[fData(x)[,symbol]==g,]) %>% as.data.frame()
+          data<-map(gene, function(g) counts(x)[fData(x)[,symbol]==g & !is.na(fData(x)[,symbol]),]) %>% as.data.frame()
         }
         colnames(data)<-gene
       } else {
         if(useNormCounts==TRUE) {
-          data<-normCounts(x)[which(fData(x)[,symbol]==gene),]
+          data<-normCounts(x)[which(fData(x)[,symbol]==gene & !is.na(fData(x)[,symbol])),]
         } else {
-          data<-counts(x)[which(fData(x)[,symbol]==gene),]
+          data<-counts(x)[which(fData(x)[,symbol]==gene & !is.na(fData(x)[,symbol])),]
         }
       }
     } else if(sum(gene %in% rownames(counts(x)))>0) {
@@ -299,10 +299,10 @@ getGeneData.DESeqTransform <- function(x, gene, plotType="box", group=NULL, subg
   if(!is.null(rowData(x)) & symbol %in% colnames(rowData(x))) {
     if(sum(gene %in% rowData(x)[,symbol])>0) {
       if(length(gene)>1) {
-        data<-map(gene, function(g) assay(x)[rownames(rowData(x))[rowData(x)[,symbol]==g],]) %>% as.data.frame()
+        data<-map(gene, function(g) assay(x)[rownames(rowData(x))[rowData(x)[,symbol]==g & !is.na(rowData(x)[,symbol])],]) %>% as.data.frame()
         colnames(data)<-gene
       } else {
-        data<-assay(x)[which(rowData(x)[,symbol]==gene),]
+        data<-assay(x)[which(rowData(x)[,symbol]==gene & !is.na(rowData(x)[,symbol])),]
       }
     } else if(sum(gene %in% rownames(assay(x)))>0) {
       if(length(gene)>1) {
@@ -366,10 +366,10 @@ getGeneData.SummarizedExperiment <- function(x, gene, plotType="box", group=NULL
   if(!is.null(rowData(x)) & symbol %in% colnames(rowData(x))) {
     if (sum(gene %in% rowData(x)[,symbol])>0) {
       if(length(gene)>1) {
-        data<-map(gene, function(g) assay(x)[rownames(rowData(x))[rowData(x)[,symbol]==g],]) %>% as.data.frame()
+        data<-map(gene, function(g) assay(x)[rownames(rowData(x))[rowData(x)[,symbol]==g] & !is.na(rowData(x)[,symbol]),]) %>% as.data.frame()
         colnames(data)<-gene
       } else {
-        data<-assay(x)[which(rowData(x)[,symbol]==gene),]
+        data<-assay(x)[which(rowData(x)[,symbol]==gene & !is.na(rowData(x)[,symbol])),]
       }
     } else if(sum(gene %in% rownames(assay(x)))>0) {
       if(length(gene)>1) {
@@ -432,10 +432,10 @@ getGeneData.EList <- function(x, gene, plotType="box", group=NULL, subgroup=NULL
   if(!is.null(x$genes) & symbol %in% colnames(x$genes)) {
     if (sum(gene %in% x$genes[,symbol])>0) {
       if(length(gene)>1) {
-        data<-map(gene, function(g) x$E[rownames(x$genes)[x$genes[,symbol]==g],]) %>% as.data.frame()
+        data<-map(gene, function(g) x$E[rownames(x$genes)[x$genes[,symbol]==g & ! is.na(x$genes[,symbol])],]) %>% as.data.frame()
         colnames(data)<-gene
       } else {
-        data<-x$E[which(x$genes[,symbol]==gene),]
+        data<-x$E[which(x$genes[,symbol]==gene & ! is.na(x$genes[,symbol])),]
       }
     } else if(sum(gene %in% rownames(x$E))>0) {
       if(length(gene)>1) {
